@@ -1,12 +1,5 @@
 
-import { useNotifications } from '@/hooks/useNotifications';
-
-export const useToast = () => {
-  const { showSuccess, showError, showInfo } = useNotifications();
-
-  return {
-    success: showSuccess,
-    error: showError,
-    info: showInfo
-  };
-};
+// This file has been deprecated and removed.
+// Use hooks/use-toast.ts instead.
+// Migration: Replace useToast() from this file with useToast() from hooks/use-toast.ts
+// Or use useNotifications() from hooks/useNotifications.ts for a simpler API

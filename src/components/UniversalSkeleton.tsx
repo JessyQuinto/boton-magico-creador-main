@@ -1,23 +1,8 @@
 
-import { cn } from '@/lib/utils';
-
-interface SkeletonProps {
-  variant?: 'card' | 'text' | 'avatar' | 'button' | 'image' | 'circular' | 'rectangular';
-  width?: string;
-  height?: string;
-  className?: string;
-  count?: number;
-  lines?: number;
-}
-
-const Skeleton = ({ 
-  variant = 'text', 
-  width, 
-  height, 
-  className,
-  count = 1,
-  lines = 1,
-  ...props 
+// This file has been deprecated and removed.
+// Use components/ui/skeleton.tsx instead.
+// Migration: Replace UniversalSkeleton with the simpler Skeleton component from ui/
+// The ui/skeleton component provides the same loading animation with a cleaner API 
 }: SkeletonProps & React.HTMLAttributes<HTMLDivElement>) => {
   const getVariantClasses = () => {
     switch (variant) {

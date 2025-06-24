@@ -1,15 +1,7 @@
 
 import { apiClient } from './apiClient';
 import { API_CONFIG } from '@/config/api';
-import type { ProductDto } from '@/types/api';
-
-export interface WishlistDto {
-  id: number;
-  userId: number;
-  products: ProductDto[];
-  createdAt: string;
-  updatedAt: string;
-}
+import type { ProductDto, WishlistDto } from '@/types/api';
 
 class WishlistService {
   async getWishlist(): Promise<WishlistDto> {

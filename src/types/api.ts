@@ -68,6 +68,14 @@ export interface CartDto {
   updatedAt: string;
 }
 
+export interface WishlistDto {
+  id: number;
+  userId: number;
+  products: ProductDto[];
+  createdAt: string;
+  updatedAt: string;
+}
+
 export interface OrderDto {
   id: number;
   userId: number;
@@ -130,6 +138,12 @@ export interface CreateOrderRequestDto {
   };
   paymentMethod: string;
   total: number;
+}
+
+export interface OrderListParams {
+  status?: string;
+  page?: number;
+  limit?: number;
 }
 
 export interface ProductFilters {

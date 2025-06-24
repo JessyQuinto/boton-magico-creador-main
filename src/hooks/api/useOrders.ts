@@ -3,13 +3,7 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { orderService } from '@/services/orderService';
 import { useToast } from '@/hooks/use-toast';
 import { useAuth } from './useAuth';
-import type { CreateOrderRequestDto } from '@/types/api';
-
-interface OrderListParams {
-  status?: string;
-  page?: number;
-  limit?: number;
-}
+import type { CreateOrderRequestDto, OrderListParams } from '@/types/api';
 
 export const useOrders = (params?: OrderListParams) => {
   const { isAuthenticated } = useAuth();
