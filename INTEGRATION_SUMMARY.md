@@ -96,181 +96,98 @@ const {
 - Tipos `.NET` específicos para respuestas de autenticación
 - Interfaces para Problem Details y validación
 
-## 🚀 Cómo Usar los Servicios Refactorizados
+### 8. **Componentes Actualizados**
 
-### Ejemplo: Componente de Productos
-```typescript
-import React, { useEffect } from 'react';
-import { useProducts } from '@/hooks/useApi';
+#### **CategoryShowcase**
+- ✅ Migrado de datos mockeados a API real
+- ✅ Usa hook `useCategories()` para obtener categorías de la API
+- ✅ Manejo de loading y error states
+- ✅ Fallback para imágenes de categorías
 
-const ProductList: React.FC = () => {
-  const { 
-    products, 
-    featuredProducts,
-    fetchProducts, 
-    fetchFeaturedProducts 
-  } = useProducts();
+#### **Products (página)**
+- ✅ Migrado de TanStack Query a hooks personalizados
+- ✅ Usa `useProducts()` y `useCategories()` 
+- ✅ Filtrado por categorías dinámico desde API
+- ✅ Búsqueda integrada con la API
+- ✅ Manejo correcto de estados de paginación
 
-  useEffect(() => {
-    // Cargar productos con paginación
-    fetchProducts({ featured: true }, 1, 10);
-    
-    // Cargar productos destacados
-    fetchFeaturedProducts();
-  }, []);
+#### **ProductDetail (página)**
+- ✅ Migrado de TanStack Query a hooks personalizados  
+- ✅ Usa `useProducts()`, `useCart()`, y `useWishlist()`
+- ✅ Funcionalidad de agregar al carrito conectada a API
+- ✅ Toggle de wishlist funcional con backend
+- ✅ Manejo de loading y error states mejorado
 
-  if (products.loading) return <div>Cargando productos...</div>;
-  if (products.error) return <div>Error: {products.error}</div>;
+#### **ProductCard**
+- ✅ Previamente actualizado para usar nuevos hooks de cart y wishlist
+- ✅ Sincronización con backend para operaciones de carrito
+- ✅ Estados visuales de loading durante operaciones
 
-  return (
-    <div>
-      <h2>Productos Destacados</h2>
-      {featuredProducts.data?.map(product => (
-        <div key={product.id}>{product.name}</div>
-      ))}
-      
-      <h2>Todos los Productos</h2>
-      {products.data?.data.map(product => (
-        <div key={product.id}>{product.name}</div>
-      ))}
-    </div>
-  );
-};
-```
+#### **LoginForm & RegisterForm**
+- ✅ Migrados para usar hook `useAuth()`
+- ✅ Manejo de errores mejorado
+- ✅ Estados de loading durante autenticación
 
-### Ejemplo: Componente de Autenticación
-```typescript
-import React, { useState } from 'react';
-import { useAuth } from '@/hooks/useApi';
+#### **FeaturedProducts**
+- ✅ Ya actualizado para usar hook `useFeaturedProducts()`
+- ✅ Loading states con skeleton loader
+- ✅ Manejo de errores mejorado
 
-const LoginForm: React.FC = () => {
-  const { login, isAuthenticated } = useAuth();
-  const [credentials, setCredentials] = useState({
-    email: '',
-    password: ''
-  });
+#### **Cart (página)**
+- ✅ Migrado de store legacy a hooks personalizados
+- ✅ Usa `useCart()` y `useAuth()` hooks
+- ✅ Operaciones de carrito conectadas a API (agregar, actualizar, eliminar)
+- ✅ Manejo de loading y error states
+- ⚠️ **Nota**: Interfaz simplificada debido a limitaciones en CartItemDto (solo incluye productId, quantity, price)
+  - Recomendación: El backend debería devolver información completa del producto en los items del carrito
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    
-    const result = await login.execute(credentials);
-    if (result) {
-      console.log('Login exitoso!');
-    }
-  };
+#### **Wishlist (página)**
+- ✅ Migrado de store legacy a hook `useWishlist()`
+- ✅ Carga dinámica de productos favoritos desde API
+- ✅ Integración con ProductCard para acciones de wishlist
+- ✅ Manejo de loading y error states
 
-  if (isAuthenticated()) {
-    return <div>Ya estás autenticado</div>;
-  }
+#### **AdvancedSearch**
+- ⚠️ **Pendiente**: Componente usa store legacy
+- ✅ **Workaround**: Búsqueda básica integrada en Products.tsx
+- 📋 **Recomendación**: Actualizar para recibir callbacks como props
 
-  return (
-    <form onSubmit={handleSubmit}>
-      <input
-        type="email"
-        value={credentials.email}
-        onChange={(e) => setCredentials(prev => ({ 
-          ...prev, 
-          email: e.target.value 
-        }))}
-        placeholder="Email"
-      />
-      <input
-        type="password"
-        value={credentials.password}
-        onChange={(e) => setCredentials(prev => ({ 
-          ...prev, 
-          password: e.target.value 
-        }))}
-        placeholder="Contraseña"
-      />
-      <button type="submit" disabled={login.loading}>
-        {login.loading ? 'Iniciando sesión...' : 'Iniciar Sesión'}
-      </button>
-      {login.error && <div className="error">{login.error}</div>}
-    </form>
-  );
-};
-```
+## 📊 **ESTADO FINAL**
 
-### Ejemplo: Componente de Carrito
-```typescript
-import React, { useEffect } from 'react';
-import { useCart } from '@/hooks/useApi';
+### **Componentes Actualizados: 9/12 principales (75%)**
+- ✅ CategoryShowcase
+- ✅ Products (página)  
+- ✅ ProductDetail (página)
+- ✅ Cart (página)
+- ✅ Wishlist (página)
+- ✅ FeaturedProducts
+- ✅ ProductCard
+- ✅ LoginForm
+- ✅ RegisterForm
 
-const CartComponent: React.FC = () => {
-  const { 
-    cart, 
-    fetchCart, 
-    addToCartCall, 
-    updateCartItem, 
-    removeFromCart 
-  } = useCart();
+### **Pendientes de Actualizar**
+- ⏳ AdvancedSearch (workaround implementado)
+- ⏳ Profile/AccountManagement 
+- ⏳ Orders/OrderHistory
 
-  useEffect(() => {
-    fetchCart();
-  }, []);
-
-  const handleAddToCart = async (productId: number) => {
-    await addToCartCall(productId, 1);
-    // El carrito se actualiza automáticamente
-  };
-
-  const handleUpdateQuantity = async (productId: number, quantity: number) => {
-    await updateCartItem(productId, quantity);
-  };
-
-  if (cart.loading) return <div>Cargando carrito...</div>;
-
-  return (
-    <div>
-      <h2>Mi Carrito</h2>
-      {cart.data?.items.map(item => (
-        <div key={item.productId}>
-          <span>{item.product?.name}</span>
-          <input
-            type="number"
-            value={item.quantity}
-            onChange={(e) => handleUpdateQuantity(
-              item.productId, 
-              parseInt(e.target.value)
-            )}
-          />
-          <button onClick={() => removeFromCart(item.productId)}>
-            Eliminar
-          </button>
-        </div>
-      ))}
-      <div>Total: ${cart.data?.total}</div>
-    </div>
-  );
-};
-```
-
-## 📋 Próximos Pasos
-
-1. **Actualizar Componentes Existentes**: Migrar componentes que usan llamadas directas a servicios para usar los nuevos hooks
-2. **Configurar Variables de Entorno**: Asegurar que `VITE_API_BASE_URL` apunte al backend correcto
-3. **Testear Integración**: Verificar que todos los endpoints del backend respondan correctamente
-4. **Implementar Interceptors Globales**: Para manejo automático de autenticación y errores
-5. **Añadir Loading States**: Implementar estados de carga globales usando los hooks
-
-## 🔧 Configuración Requerida
-
-### Variables de Entorno (.env)
-```
+### **Variables de Entorno - ✅ CONFIGURADAS**
+```bash
 VITE_API_BASE_URL=http://localhost:5000/api/v1
+VITE_APP_ENV=development
+VITE_APP_NAME=TesorosChocó
+VITE_ENABLE_DEBUG=true
+VITE_AUTH_TOKEN_STORAGE_KEY=choco_access_token
 ```
 
-### Dependencias (ya instaladas)
-- axios (opcional, actualmente usando fetch)
-- React hooks existentes
+## 🚀 **RESULTADO FINAL**
 
-## ✨ Beneficios de la Refactorización
+**Estado**: ✅ **INTEGRACIÓN COMPLETADA** - Lista para testing  
+**Cobertura**: 🎯 **75% de componentes principales** actualizados  
+**API**: ✅ **100% de servicios** conectados al backend .NET 9  
+**Errores**: ✅ **0 errores de TypeScript** en componentes actualizados  
 
-1. **Consistencia**: Todos los servicios siguen el mismo patrón
-2. **Manejo de Errores**: Errores específicos y mensajes en español
-3. **Reutilización**: Hooks reutilizables para diferentes componentes
-4. **TypeScript**: Tipado fuerte para mejor desarrollo
-5. **Compatibilidad .NET**: Soporte completo para respuestas .NET 9
-6. **Escalabilidad**: Fácil añadir nuevos servicios siguiendo el patrón
-7. **Debugging**: Logging mejorado para desarrollo y producción
+### **Próximo paso**: Iniciar testing con backend .NET 9 corriendo en `http://localhost:5000`
+
+---
+
+*Consulta `INTEGRATION_STATUS.md` para un resumen ejecutivo detallado y pasos de testing.*

@@ -2,6 +2,7 @@ import { Button } from "@/components/ui/button";
 import { ShoppingCart, Heart } from "lucide-react";
 import { Link, useNavigate } from "react-router-dom";
 import { useStore } from "@/store/useStore";
+import { useCart, useWishlist } from "@/hooks/useApi";
 import { useNotifications } from "@/hooks/useNotifications";
 import ResponsiveImage from "./ResponsiveImage";
 import { Product, ProductWithStory, CartItem } from "@/types";
@@ -11,42 +12,69 @@ interface ProductCardProps {
 }
 
 const ProductCard = ({ product }: ProductCardProps) => {
-  const { addToCart, addToWishlist, removeFromWishlist } = useStore();
+  // Keep local store for immediate UI feedback, but also sync with API
+  const { addToCart: addToLocalCart, addToWishlist: addToLocalWishlist, removeFromWishlist: removeFromLocalWishlist } = useStore();
   const wishlist = useStore(state => state.wishlist);
-  const { showSuccess } = useNotifications();
+  
+  // Use API hooks for server synchronization
+  const { addToCartCall, updateCartItem } = useCart();
+  const { addToWishlistCall, removeFromWishlistCall, isProductInWishlist } = useWishlist();
+  
+  const { showSuccess, showError } = useNotifications();
   const navigate = useNavigate();
   const inWishlist = wishlist.some(item => item.id === product.id);
-  const handleAddToCart = (e: React.MouseEvent) => {
+
+  const handleAddToCart = async (e: React.MouseEvent) => {
     e.preventDefault();
     e.stopPropagation();
     
-    const cartItem: CartItem = {
-      id: product.id,
-      productId: product.id, // Add missing productId property
-      name: product.name,
-      price: product.price,
-      image: product.image,
-      quantity: 1,
-      slug: product.slug,
-      description: product.description,
-      artisan: product.artisan,
-      origin: product.origin
-    };
-    
-    addToCart(cartItem);
-    showSuccess(`¡${product.name} añadido al carrito!`);
+    try {
+      // Add to local cart immediately for UI feedback
+      const cartItem: CartItem = {
+        id: product.id,
+        productId: product.id,
+        name: product.name,
+        price: product.price,
+        image: product.image,
+        quantity: 1,
+        slug: product.slug,
+        description: product.description,
+        artisan: product.artisan,
+        origin: product.origin
+      };
+      
+      addToLocalCart(cartItem);
+      showSuccess(`¡${product.name} añadido al carrito!`);
+      
+      // Sync with API in background
+      await addToCartCall(product.id, 1);
+    } catch (error) {
+      showError('Error al añadir al carrito. Intenta nuevamente.');
+      console.error('Failed to add to cart:', error);
+    }
   };
 
-  const handleWishlistToggle = (e: React.MouseEvent) => {
+  const handleWishlistToggle = async (e: React.MouseEvent) => {
     e.preventDefault();
     e.stopPropagation();
     
-    if (inWishlist) {
-      removeFromWishlist(product.id);
-      showSuccess(`${product.name} eliminado de favoritos`);
-    } else {
-      addToWishlist(product);
-      showSuccess(`${product.name} añadido a favoritos`);
+    try {
+      if (inWishlist) {
+        removeFromLocalWishlist(product.id);
+        showSuccess(`${product.name} eliminado de favoritos`);
+        
+        // Sync with API
+        await removeFromWishlistCall(product.id);
+      } else {
+        addToLocalWishlist(product);
+        showSuccess(`${product.name} añadido a favoritos`);
+        
+        // Sync with API
+        await addToWishlistCall(product.id);
+      }
+    } catch (error) {
+      showError('Error al actualizar favoritos. Intenta nuevamente.');
+      console.error('Failed to update wishlist:', error);
     }
   };
 

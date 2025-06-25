@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
 import { Trash2, Plus, Minus, ShoppingBag, ArrowLeft, User, UserPlus } from "lucide-react";
 import Header from "@/components/Header";
@@ -7,38 +7,58 @@ import LoadingSpinner from "@/components/LoadingSpinner";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Breadcrumb, BreadcrumbItem, BreadcrumbLink, BreadcrumbList, BreadcrumbPage, BreadcrumbSeparator } from "@/components/ui/breadcrumb";
-import { useStore, useCartItems, useCartCount, useCartTotal, useAuth } from "@/store/useStore";
+import { useCart, useAuth } from "@/hooks/useApi";
 import { useNotifications } from "@/hooks/useNotifications";
 
 const Cart = () => {
   const { 
-    updateCartQuantity, 
-    removeFromCart, 
-    clearCart 
-  } = useStore();
-  const cartItems = useCartItems();
-  const cartCount = useCartCount();
-  const cartTotal = useCartTotal();
-  const { isLoggedIn } = useAuth();
+    cart,
+    fetchCart,
+    updateCartItem,
+    removeFromCart,
+    clearCartCall
+  } = useCart();
+  
+  const { isAuthenticated } = useAuth();
   const { showSuccess, showError } = useNotifications();
   const [acceptTerms, setAcceptTerms] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
 
-  const handleQuantityChange = (itemId: number, newQuantity: number) => {
+  useEffect(() => {
+    fetchCart();
+  }, [fetchCart]);
+
+  const cartItems = cart.data?.items || [];
+  const cartCount = cartItems.length;
+  const cartTotal = cart.data?.total || 0;
+
+  const handleQuantityChange = async (productId: number, newQuantity: number) => {
     if (newQuantity >= 1) {
-      updateCartQuantity(itemId, newQuantity);
-      showSuccess("Cantidad actualizada");
+      try {
+        await updateCartItem(productId, newQuantity);
+        showSuccess("Cantidad actualizada");
+      } catch (error) {
+        showError("Error al actualizar cantidad");
+      }
     }
   };
 
-  const handleRemoveItem = (itemId: number, itemName: string) => {
-    removeFromCart(itemId);
-    showSuccess(`${itemName} eliminado del carrito`);
+  const handleRemoveItem = async (productId: number) => {
+    try {
+      await removeFromCart(productId);
+      showSuccess("Producto eliminado del carrito");
+    } catch (error) {
+      showError("Error al eliminar producto");
+    }
   };
 
-  const handleClearCart = () => {
-    clearCart();
-    showSuccess("Carrito vacío");
+  const handleClearCart = async () => {
+    try {
+      await clearCartCall();
+      showSuccess("Carrito vacío");
+    } catch (error) {
+      showError("Error al vaciar carrito");
+    }
   };
 
   const subtotal = cartTotal;
@@ -138,32 +158,20 @@ const Cart = () => {
                 </Button>
               </div>
 
-              {cartItems.map((item) => (
-                <div key={item.id} className="bg-white border border-secondary/20 rounded-xl p-4 sm:p-6 shadow-sm hover:shadow-md transition-shadow">
+              {cartItems.map((item, index) => (
+                <div key={`${item.productId}-${index}`} className="bg-white border border-secondary/20 rounded-xl p-4 sm:p-6 shadow-sm hover:shadow-md transition-shadow">
                   <div className="flex flex-col space-y-4">
                     <div className="flex space-x-4">
                       <div className="flex-shrink-0">
-                        <Link to={`/product-detail?slug=${item.slug}`}>
-                          <img
-                            src={item.image}
-                            alt={item.name}
-                            className="w-16 h-16 sm:w-24 sm:h-24 object-cover rounded-lg hover:opacity-80 transition-opacity"
-                          />
-                        </Link>
+                        <div className="w-16 h-16 sm:w-24 sm:h-24 bg-gray-200 rounded-lg flex items-center justify-center">
+                          <ShoppingBag className="h-8 w-8 text-gray-400" />
+                        </div>
                       </div>
 
                       <div className="flex-1 min-w-0">
-                        <Link to={`/product-detail?slug=${item.slug}`}>
-                          <h3 className="text-sm sm:text-lg font-semibold text-primary hover:text-action transition-colors line-clamp-2">
-                            {item.name}
-                          </h3>
-                        </Link>
-                        <p className="text-secondary text-xs sm:text-sm line-clamp-2 mt-1">
-                          {item.description}
-                        </p>
-                        <p className="text-action font-medium text-xs sm:text-sm mt-1">
-                          Por {item.artisan} • {item.origin}
-                        </p>
+                        <h3 className="text-sm sm:text-lg font-semibold text-primary line-clamp-2">
+                          Producto ID: {item.productId}
+                        </h3>
                         <p className="text-base sm:text-lg font-bold text-action mt-1">
                           ${item.price.toLocaleString()} c/u
                         </p>
@@ -172,7 +180,7 @@ const Cart = () => {
                       <Button
                         variant="ghost"
                         size="sm"
-                        onClick={() => handleRemoveItem(item.id, item.name)}
+                        onClick={() => handleRemoveItem(item.productId)}
                         className="text-red-600 hover:text-red-700 hover:bg-red-50 p-2 flex-shrink-0"
                       >
                         <Trash2 className="h-4 w-4" />
@@ -186,7 +194,7 @@ const Cart = () => {
                           <Button
                             variant="ghost"
                             size="sm"
-                            onClick={() => handleQuantityChange(item.id, item.quantity - 1)}
+                            onClick={() => handleQuantityChange(item.productId, item.quantity - 1)}
                             disabled={item.quantity <= 1}
                             className="h-8 w-8 p-0 hover:bg-secondary/20"
                           >
@@ -198,7 +206,7 @@ const Cart = () => {
                           <Button
                             variant="ghost"
                             size="sm"
-                            onClick={() => handleQuantityChange(item.id, item.quantity + 1)}
+                            onClick={() => handleQuantityChange(item.productId, item.quantity + 1)}
                             className="h-8 w-8 p-0 hover:bg-secondary/20"
                           >
                             <Plus className="h-3 w-3 sm:h-4 sm:w-4" />
@@ -207,7 +215,7 @@ const Cart = () => {
                       </div>
 
                       <div className="text-lg sm:text-xl font-bold text-action">
-                        ${item.total.toLocaleString()}
+                        ${(item.price * item.quantity).toLocaleString()}
                       </div>
                     </div>
                   </div>
@@ -262,7 +270,7 @@ const Cart = () => {
 
               {/* Opciones de Checkout */}
               <div className="space-y-3">
-                {isLoggedIn ? (
+                {isAuthenticated() ? (
                   <Button
                     onClick={handleCheckout}
                     disabled={!acceptTerms || cartCount === 0}

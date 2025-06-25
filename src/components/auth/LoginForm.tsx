@@ -2,7 +2,7 @@
 import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { Eye, EyeOff } from 'lucide-react';
-import { useAuth } from '@/context/AuthContext';
+import { useAuth } from '@/hooks/useApi';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
@@ -29,7 +29,7 @@ type LoginFormValues = z.infer<typeof formSchema>;
 
 const LoginForm: React.FC = () => {
   const [showPassword, setShowPassword] = useState(false);
-  const { login, isLoggingIn } = useAuth();
+  const { login } = useAuth();
   const navigate = useNavigate();
   const { toast } = useToast();
 
@@ -43,32 +43,31 @@ const LoginForm: React.FC = () => {
 
   const onSubmit = async (data: LoginFormValues) => {
     try {
-      // Ensure data has required fields before passing to login
-      const loginData = {
+      // Use the new API hook for login
+      const result = await login.execute({
         email: data.email,
         password: data.password,
-      };
+      });
       
-      const success = await login(loginData);
-      if (success) {
-        navigate('/');
-      } else {
-        form.setError("root.serverError", { 
-            type: "manual",
-            message: "Credenciales incorrectas o error del servidor." 
+      if (result) {
+        toast({
+          title: "¡Bienvenido!",
+          description: "Has iniciado sesión exitosamente.",
+          variant: "default",
         });
+        navigate('/');
       }
     } catch (err) {
       console.error("Login submission error:", err);
       toast({
-        title: "Error Inesperado",
-        description: "Ocurrió un error al intentar iniciar sesión. Por favor, inténtalo de nuevo.",
+        title: "Error de Autenticación",
+        description: login.error || "Credenciales incorrectas. Por favor, inténtalo de nuevo.",
         variant: "destructive",
       });
-       form.setError("root.serverError", { 
-            type: "manual",
-            message: "Error inesperado durante el inicio de sesión." 
-        });
+      form.setError("root.serverError", { 
+        type: "manual",
+        message: login.error || "Error durante el inicio de sesión." 
+      });
     }
   };
 
@@ -151,10 +150,10 @@ const LoginForm: React.FC = () => {
 
           <Button
             type="submit"
-            disabled={isLoggingIn}
+            disabled={login.loading}
             className="w-full py-4 px-6 rounded-lg font-semibold text-white text-lg transition-all transform hover:scale-105 shadow-lg bg-tesoros-green hover:bg-tesoros-blue dark:bg-tesoros-gold dark:hover:bg-tesoros-gold/90 dark:text-black active:bg-tesoros-brown shadow-tesoros-green/30 hover:shadow-tesoros-blue/30 disabled:bg-gray-400 disabled:cursor-not-allowed disabled:hover:scale-100"
           >
-            {isLoggingIn ? 'Iniciando sesión...' : 'Iniciar Sesión'}
+            {login.loading ? 'Iniciando sesión...' : 'Iniciar Sesión'}
           </Button>
         </form>
       </Form>

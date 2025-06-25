@@ -1,15 +1,54 @@
 
+import { useEffect } from "react";
 import { Link } from "react-router-dom";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 import ProductCard from "@/components/ProductCard";
-import { useStore } from "@/store/useStore";
+import { useWishlist } from "@/hooks/useApi";
 import { Breadcrumb, BreadcrumbItem, BreadcrumbLink, BreadcrumbList, BreadcrumbPage, BreadcrumbSeparator } from "@/components/ui/breadcrumb";
 import { Heart, ShoppingBag } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import LoadingSpinner from "@/components/LoadingSpinner";
 
 const Wishlist = () => {
-  const wishlist = useStore(state => state.wishlist);
+  const { 
+    wishlist,
+    fetchWishlist
+  } = useWishlist();
+
+  useEffect(() => {
+    fetchWishlist();
+  }, [fetchWishlist]);
+
+  const wishlistItems = wishlist.data?.products || [];
+  const isLoading = wishlist.loading;
+  const error = wishlist.error;
+
+  if (isLoading) {
+    return (
+      <div className="min-h-screen bg-background">
+        <Header />
+        <div className="container mx-auto px-4 py-8">
+          <LoadingSpinner text="Cargando favoritos..." />
+        </div>
+        <Footer />
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="min-h-screen bg-background">
+        <Header />
+        <div className="container mx-auto px-4 py-8">
+          <div className="text-center text-red-600">
+            Error al cargar favoritos: {error}
+          </div>
+        </div>
+        <Footer />
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-background">
@@ -33,14 +72,14 @@ const Wishlist = () => {
           <h1 className="text-3xl md:text-4xl lg:text-5xl font-bold text-primary">
             Mis Favoritos
           </h1>
-          {wishlist.length > 0 && (
+          {wishlistItems.length > 0 && (
             <span className="bg-action text-white text-sm px-3 py-1 rounded-full">
-              {wishlist.length}
+              {wishlistItems.length}
             </span>
           )}
         </div>
 
-        {wishlist.length === 0 ? (
+        {wishlistItems.length === 0 ? (
           <div className="text-center py-16">
             <div className="max-w-md mx-auto">
               <Heart className="h-24 w-24 text-secondary/50 mx-auto mb-6" />
@@ -62,7 +101,7 @@ const Wishlist = () => {
           <>
             <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between mb-8 space-y-4 sm:space-y-0">
               <p className="text-secondary text-lg">
-                {wishlist.length} {wishlist.length === 1 ? 'producto guardado' : 'productos guardados'}
+                {wishlistItems.length} {wishlistItems.length === 1 ? 'producto guardado' : 'productos guardados'}
               </p>
               <Button asChild variant="outline" className="border-action text-action hover:bg-action hover:text-white">
                 <Link to="/shop" className="flex items-center space-x-2">
@@ -73,7 +112,7 @@ const Wishlist = () => {
             </div>
 
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 md:gap-8">
-              {wishlist.map((product) => (
+              {wishlistItems.map((product) => (
                 <ProductCard key={product.id} product={product} />
               ))}
             </div>

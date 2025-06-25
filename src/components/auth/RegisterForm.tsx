@@ -1,52 +1,71 @@
 import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { Eye, EyeOff } from 'lucide-react';
-import { useAuth } from '@/context/AuthContext';
+import { useAuth } from '@/hooks/useApi';
+import { useToast } from '@/hooks/use-toast';
 
 const RegisterForm: React.FC = () => {
-  const [name, setName] = useState('');
+  const [firstName, setFirstName] = useState('');
+  const [lastName, setLastName] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
+  const [phone, setPhone] = useState('');
+  const [address, setAddress] = useState('');
   const [showPassword, setShowPassword] = useState(false);
-  const [isLoading, setIsLoading] = useState(false);
-  const [error, setError] = useState('');
+  const [formError, setFormError] = useState('');
   
   const { register } = useAuth();
+  const { toast } = useToast();
   const navigate = useNavigate();
   
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
-    if (!name || !email || !password || !confirmPassword) {
-      setError('Por favor complete todos los campos');
+    if (!firstName || !lastName || !email || !password || !confirmPassword) {
+      setFormError('Por favor complete todos los campos obligatorios');
       return;
     }
     
     if (password !== confirmPassword) {
-      setError('Las contraseñas no coinciden');
+      setFormError('Las contraseñas no coinciden');
       return;
     }
     
     if (password.length < 6) {
-      setError('La contraseña debe tener al menos 6 caracteres');
+      setFormError('La contraseña debe tener al menos 6 caracteres');
       return;
     }
     
     try {
-      setIsLoading(true);
-      setError('');
+      setFormError('');
       
-      // Pass the data as an object instead of separate arguments
-      const success = await register({ name, email, password });
-      if (success) {
+      // Use the new API hook for registration
+      const result = await register.execute({
+        firstName,
+        lastName,
+        email,
+        password,
+        phone,
+        address,
+      });
+      
+      if (result) {
+        toast({
+          title: "¡Registro Exitoso!",
+          description: "Bienvenido a Tesoros del Chocó.",
+          variant: "default",
+        });
         navigate('/');
       }
     } catch (err) {
-      setError('Error al registrar usuario');
-      console.error(err);
-    } finally {
-      setIsLoading(false);
+      console.error('Registration error:', err);
+      setFormError(register.error || 'Error al registrar usuario. Intenta nuevamente.');
+      toast({
+        title: "Error de Registro",
+        description: register.error || "No se pudo completar el registro. Por favor, intenta de nuevo.",
+        variant: "destructive",
+      });
     }
   };
   

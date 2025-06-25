@@ -2,35 +2,44 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
 import Container from '@/components/layout/Container';
-
-const categories = [
-  {
-    name: 'Tejidos',
-    slug: 'tejidos',
-    image: 'https://images.unsplash.com/photo-1604782206219-3b9b64d6e689?q=80&w=1974&auto=format&fit=crop',
-    description: 'Traditional weavings and textiles'
-  },
-  {
-    name: 'Cerámicas',
-    slug: 'ceramicas', 
-    image: 'https://images.unsplash.com/photo-1565193298357-c1c8799bf104?q=80&w=2070&auto=format&fit=crop',
-    description: 'Handcrafted pottery and ceramics'
-  },
-  {
-    name: 'Joyería',
-    slug: 'joyeria',
-    image: 'https://images.unsplash.com/photo-1589128777148-a954bbcad65a?q=80&w=2070&auto=format&fit=crop',
-    description: 'Unique jewelry pieces'
-  },
-  {
-    name: 'Madera',
-    slug: 'madera',
-    image: 'https://images.unsplash.com/photo-1503387837-b154d5074bd2?q=80&w=2071&auto=format&fit=crop',
-    description: 'Carved wooden crafts'
-  }
-];
+import { useCategories } from '@/hooks/useApi';
+import LoadingSpinner from '@/components/LoadingSpinner';
 
 const CategoryShowcase: React.FC = () => {
+  const { 
+    list,
+    fetchCategories
+  } = useCategories();
+
+  React.useEffect(() => {
+    fetchCategories();
+  }, [fetchCategories]);
+
+  if (list.loading) {
+    return (
+      <section className="py-8 sm:py-12 lg:py-16 bg-white">
+        <Container>
+          <div className="text-center">
+            <LoadingSpinner />
+          </div>
+        </Container>
+      </section>
+    );
+  }
+
+  if (list.error) {
+    return (
+      <section className="py-8 sm:py-12 lg:py-16 bg-white">
+        <Container>
+          <div className="text-center text-red-600">
+            Error loading categories: {list.error}
+          </div>
+        </Container>
+      </section>
+    );
+  }
+
+  const categories = list.data || [];
   return (
     <section className="py-8 sm:py-12 lg:py-16 bg-white">
       <Container>
@@ -52,7 +61,7 @@ const CategoryShowcase: React.FC = () => {
             >
               <div className="relative overflow-hidden rounded-xl aspect-square mb-3 sm:mb-4">
                 <img
-                  src={category.image}
+                  src={category.image || 'https://images.unsplash.com/photo-1604782206219-3b9b64d6e689?q=80&w=1974&auto=format&fit=crop'}
                   alt={category.name}
                   className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-110"
                 />
@@ -62,7 +71,7 @@ const CategoryShowcase: React.FC = () => {
                 {category.name}
               </h3>
               <p className="text-[#608a7c] text-xs sm:text-sm">
-                {category.description}
+                {category.description || 'Artesanías tradicionales de alta calidad'}
               </p>
             </Link>
           ))}

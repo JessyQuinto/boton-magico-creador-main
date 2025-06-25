@@ -1,6 +1,5 @@
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect } from "react";
 import { useParams } from "react-router-dom";
-import { useQuery } from "@tanstack/react-query";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 import ProductReviews from "@/components/ProductReviews";
@@ -8,29 +7,49 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Breadcrumb, BreadcrumbItem, BreadcrumbLink, BreadcrumbList, BreadcrumbPage, BreadcrumbSeparator } from "@/components/ui/breadcrumb";
 import { Heart, ShoppingCart, Star, Truck, Shield, RotateCcw, Book } from "lucide-react";
-import { useStore } from "@/store/useStore";
+import { useProducts, useCart, useWishlist } from "@/hooks/useApi";
 import { useNotifications } from "@/hooks/useNotifications";
-import { fetchProductBySlug } from "@/services/productApi";
-import { CartItem } from "@/types";
+import LoadingSpinner from "@/components/LoadingSpinner";
 
 const ProductDetail = () => {
   const { slug } = useParams<{ slug: string }>();
   const [selectedImage, setSelectedImage] = useState(0);
   const [quantity, setQuantity] = useState(1);
 
-  const { addToCart, addToWishlist, removeFromWishlist } = useStore();
-  const wishlist = useStore(state => state.wishlist);
-  const { showSuccess } = useNotifications();
+  const { 
+    singleProduct,
+    fetchProductBySlug
+  } = useProducts();
 
-  const { data: product, isLoading } = useQuery({
-    queryKey: ['product', slug],
-    queryFn: () => fetchProductBySlug(slug!),
-    enabled: !!slug,
-  });
+  const {
+    addToCartCall,
+    fetchCart
+  } = useCart();
+
+  const {
+    wishlist,
+    addToWishlistCall,
+    removeFromWishlistCall,
+    fetchWishlist
+  } = useWishlist();
+
+  const { showSuccess, showError } = useNotifications();
+
+  useEffect(() => {
+    if (slug) {
+      fetchProductBySlug(slug);
+    }
+    fetchCart();
+    fetchWishlist();
+  }, [slug, fetchProductBySlug, fetchCart, fetchWishlist]);
+
+  const product = singleProduct.data;
+  const isLoading = singleProduct.loading;
+  const error = singleProduct.error;
 
   const inWishlist = useMemo(() => 
-    product ? wishlist.some(item => item.id === product.id) : false, 
-    [product, wishlist]
+    product ? wishlist.data?.products?.some(item => item.id === product.id) : false, 
+    [product, wishlist.data]
   );
 
   // Optimized image array with fallback
@@ -38,35 +57,30 @@ const ProductDetail = () => {
     product?.images || [product?.image || ''].filter(Boolean), 
     [product]
   );
-  const handleAddToCart = () => {
+  const handleAddToCart = async () => {
     if (!product) return;
     
-    const cartItem: CartItem = {
-      id: product.id,
-      productId: product.id, // Add missing productId property
-      name: product.name,
-      price: product.price,
-      image: product.image,
-      quantity,
-      slug: product.slug,
-      description: product.description,
-      artisan: product.artisan,
-      origin: product.origin
-    };
-    
-    addToCart(cartItem);
-    showSuccess(`¡${product.name} añadido al carrito!`);
+    try {
+      await addToCartCall(product.id, quantity);
+      showSuccess(`¡${product.name} añadido al carrito!`);
+    } catch (error) {
+      showError('Error al añadir al carrito');
+    }
   };
 
-  const handleWishlistToggle = () => {
+  const handleWishlistToggle = async () => {
     if (!product) return;
     
-    if (inWishlist) {
-      removeFromWishlist(product.id);
-      showSuccess(`${product.name} eliminado de favoritos`);
-    } else {
-      addToWishlist(product);
-      showSuccess(`${product.name} añadido a favoritos!`);
+    try {
+      if (inWishlist) {
+        await removeFromWishlistCall(product.id);
+        showSuccess(`${product.name} eliminado de favoritos`);
+      } else {
+        await addToWishlistCall(product.id);
+        showSuccess(`${product.name} añadido a favoritos!`);
+      }
+    } catch (error) {
+      showError('Error al actualizar favoritos');
     }
   };
 
@@ -75,30 +89,26 @@ const ProductDetail = () => {
       <div className="min-h-screen bg-background">
         <Header />
         <div className="container mx-auto px-4 py-8">
-          <div className="animate-pulse space-y-8">
-            <div className="h-8 bg-gray-200 rounded w-1/3"></div>
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-              <div className="aspect-square bg-gray-200 rounded-xl"></div>
-              <div className="space-y-4">
-                <div className="h-8 bg-gray-200 rounded w-3/4"></div>
-                <div className="h-4 bg-gray-200 rounded w-1/2"></div>
-                <div className="h-6 bg-gray-200 rounded w-1/4"></div>
-              </div>
-            </div>
-          </div>
+          <LoadingSpinner text="Cargando producto..." />
         </div>
         <Footer />
       </div>
     );
   }
 
-  if (!product) {
+  if (error || !product) {
     return (
       <div className="min-h-screen bg-background">
         <Header />
-        <div className="container mx-auto px-4 py-8 text-center">
-          <h1 className="text-2xl font-bold text-primary-text mb-4">Producto no encontrado</h1>
-          <p className="text-primary-secondary">El producto que buscas no existe o ha sido eliminado.</p>
+        <div className="container mx-auto px-4 py-8">
+          <div className="text-center">
+            <h1 className="text-2xl font-bold text-red-600 mb-4">
+              {error ? `Error: ${error}` : 'Producto no encontrado'}
+            </h1>
+            <p className="text-gray-600">
+              El producto que buscas no está disponible o ha sido movido.
+            </p>
+          </div>
         </div>
         <Footer />
       </div>
@@ -285,8 +295,8 @@ const ProductDetail = () => {
           </div>
         </div>
 
-        {/* Cultural Story Section */}
-        {product.story && (
+        {/* Cultural Story Section - Disabled until story is available in API */}
+        {/*product.story && (
           <div className="mb-12 p-8 bg-gradient-to-r from-primary-background to-secondary/5 rounded-xl border border-secondary/10">
             <div className="flex items-center space-x-3 mb-6">
               <div className="p-3 bg-primary-action rounded-full">
@@ -309,7 +319,7 @@ const ProductDetail = () => {
               </p>
             </div>
           </div>
-        )}
+        )*/}
 
         {/* Reviews Section */}
         <ProductReviews productId={product.id} />
