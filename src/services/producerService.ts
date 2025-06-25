@@ -4,7 +4,7 @@ import { API_CONFIG } from '@/config/api';
 import type { ProducerDto } from '@/types/api';
 
 class ProducerService {
-  async getAllProducers(): Promise<ProducerDto[]> {
+  async getProducers(): Promise<ProducerDto[]> {
     console.log('Fetching all producers');
     return apiClient.get<ProducerDto[]>(API_CONFIG.ENDPOINTS.PRODUCERS);
   }

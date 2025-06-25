@@ -179,8 +179,10 @@ class ApiClient {
     }
   }
 
-  async get<T>(url: string, options?: RequestInit): Promise<T> {
-    return this.makeRequest<T>(url, { method: 'GET', ...options });
+  async get<T>(url: string, params?: Record<string, any>, options?: RequestInit): Promise<T> {
+    const queryString = params ? this.buildQueryString(params) : '';
+    const fullUrl = queryString ? `${url}?${queryString}` : url;
+    return this.makeRequest<T>(fullUrl, { method: 'GET', ...options });
   }
 
   async post<T>(url: string, data?: any, options?: RequestInit): Promise<T> {
@@ -209,6 +211,16 @@ class ApiClient {
 
   async delete<T>(url: string, options?: RequestInit): Promise<T> {
     return this.makeRequest<T>(url, { method: 'DELETE', ...options });
+  }
+
+  private buildQueryString(params: Record<string, any>): string {
+    const searchParams = new URLSearchParams();
+    Object.entries(params).forEach(([key, value]) => {
+      if (value !== undefined && value !== null && value !== '') {
+        searchParams.append(key, value.toString());
+      }
+    });
+    return searchParams.toString();
   }
 }
 

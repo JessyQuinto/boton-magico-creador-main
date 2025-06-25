@@ -4,22 +4,9 @@ import { API_CONFIG } from '@/config/api';
 import type { OrderDto, CreateOrderRequestDto, OrderListParams } from '@/types/api';
 
 class OrderService {
-  async getUserOrders(params?: OrderListParams): Promise<OrderDto[]> {
-    console.log('Fetching user orders');
-    
-    let url = API_CONFIG.ENDPOINTS.ORDERS;
-    if (params) {
-      const searchParams = new URLSearchParams();
-      if (params.status) searchParams.append('status', params.status);
-      if (params.page) searchParams.append('page', params.page.toString());
-      if (params.limit) searchParams.append('limit', params.limit.toString());
-      
-      if (searchParams.toString()) {
-        url += `?${searchParams.toString()}`;
-      }
-    }
-    
-    return apiClient.get<OrderDto[]>(url);
+  async getOrders(params?: OrderListParams): Promise<OrderDto[]> {
+    console.log('Fetching user orders', params);
+    return apiClient.get<OrderDto[]>(API_CONFIG.ENDPOINTS.ORDERS, params);
   }
 
   async getOrderById(id: number): Promise<OrderDto> {

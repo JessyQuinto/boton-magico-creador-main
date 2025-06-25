@@ -10,7 +10,7 @@ export const useOrders = (params?: OrderListParams) => {
   
   return useQuery({
     queryKey: ['orders', params],
-    queryFn: () => orderService.getUserOrders(params),
+    queryFn: () => orderService.getOrders(params),
     enabled: isAuthenticated,
   });
 };

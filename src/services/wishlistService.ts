@@ -1,4 +1,3 @@
-
 import { apiClient } from './apiClient';
 import { API_CONFIG } from '@/config/api';
 import type { ProductDto, WishlistDto } from '@/types/api';
@@ -24,6 +23,25 @@ class WishlistService {
   async clearWishlist(): Promise<void> {
     console.log('Clearing entire wishlist');
     await apiClient.delete(API_CONFIG.ENDPOINTS.WISHLIST);
+  }
+
+  async isProductInWishlist(productId: number): Promise<boolean> {
+    console.log(`Checking if product ${productId} is in wishlist`);
+    try {
+      const wishlist = await this.getWishlist();
+      return wishlist.products.some(product => product.id === productId);
+    } catch (error) {
+      console.error('Error checking wishlist status:', error);
+      return false;
+    }
+  }
+
+  async moveToCart(productId: number, quantity: number = 1): Promise<void> {
+    console.log(`Moving product ${productId} from wishlist to cart`);
+    await apiClient.post(`${API_CONFIG.ENDPOINTS.WISHLIST}/move-to-cart`, {
+      productId,
+      quantity,
+    });
   }
 }
 

@@ -7,16 +7,18 @@ import {
   useMutation,
   useQueryClient,
 } from '@tanstack/react-query';
-import { User } from '@/types'; // Import User from centralized types
+import { authService } from '@/services/authService';
+import { TokenManager } from '@/utils/tokenManager';
+import type { DotNetUserDto, LoginRequestDto, RegisterRequestDto } from '@/types/api';
 
 const AUTH_STORAGE_KEY = 'campo-artesano-auth-user';
-const USER_QUERY_KEY = ['user'];
+const USER_QUERY_KEY = ['auth', 'user'];
 
 // Initialize QueryClient
 const queryClient = new QueryClient();
 
 // Save user data to storage
-const saveUserToStorage = (user: User | null) => {
+const saveUserToStorage = (user: DotNetUserDto | null) => {
   if (user) {
     localStorage.setItem(AUTH_STORAGE_KEY, JSON.stringify(user));
   } else {
@@ -25,11 +27,11 @@ const saveUserToStorage = (user: User | null) => {
 };
 
 // Load user data from storage
-const loadUserFromStorage = (): User | null => {
+const loadUserFromStorage = (): DotNetUserDto | null => {
   try {
     const storedUser = localStorage.getItem(AUTH_STORAGE_KEY);
     if (!storedUser) return null;
-    return JSON.parse(storedUser) as User;
+    return JSON.parse(storedUser) as DotNetUserDto;
   } catch (error) {
     console.error("Error loading user from storage:", error);
     return null;
@@ -37,12 +39,12 @@ const loadUserFromStorage = (): User | null => {
 };
 
 export interface AuthContextType {
-  user: User | null;
+  user: DotNetUserDto | null;
   isAuthenticated: boolean;
-  login: (credentials: { email: string, password: string }) => Promise<boolean>;
+  login: (credentials: LoginRequestDto) => Promise<boolean>;
   logout: () => void;
-  register: (userData: { name: string, email: string, password: string }) => Promise<boolean>;
-  updateUser: (userData: Partial<User>) => Promise<void>;
+  register: (userData: RegisterRequestDto) => Promise<boolean>;
+  updateUser: (userData: Partial<DotNetUserDto>) => Promise<void>;
   isLoadingUser: boolean;
   isLoggingIn: boolean;
   isRegistering: boolean;
@@ -56,22 +58,25 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const TanstackQueryClient = useQueryClient(); // Get client from provider, or use the local one
 
   // Query for user data
-  const { data: user, isLoading: isLoadingUser, isSuccess: isUserLoaded } = useQuery<User | null, Error>({
+  const { data: user, isLoading: isLoadingUser, isSuccess: isUserLoaded } = useQuery<DotNetUserDto | null, Error>({
     queryKey: USER_QUERY_KEY,
     queryFn: async () => {
-      // This function could be used to fetch user data from an API if the user is already authenticated (e.g., via a token)
-      // For now, it primarily relies on initialData and mutations to update the cache.
-      const loadedUser = loadUserFromStorage();
-      if (!loadedUser) {
-        // To ensure consistency, if nothing is in storage, queryFn should return null or throw,
-        // so react-query doesn't try to fetch indefinitely if there's no actual API call here.
-        return null; 
+      // Check if user is authenticated
+      if (!TokenManager.isAuthenticated()) {
+        return null;
       }
-      return loadedUser;
+      // Fetch current user from backend
+      try {
+        return await authService.getCurrentUser();
+      } catch (error) {
+        console.error('Failed to fetch current user:', error);
+        TokenManager.clearTokens();
+        return null;
+      }
     },
-    initialData: loadUserFromStorage(), // Load initial user from localStorage
-    staleTime: Infinity, // Data is considered fresh indefinitely, refetch on mutation/invalidation
-    gcTime: Infinity, // Cache data indefinitely
+    initialData: loadUserFromStorage(),
+    staleTime: 5 * 60 * 1000, // 5 minutes
+    gcTime: Infinity,
   });
 
   useEffect(() => {
@@ -83,24 +88,18 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const isAuthenticated = !!user && isUserLoaded;
 
   // Mutation for login
-  const loginMutation = useMutation<User, Error, { email: string, password: string }>({
-    mutationFn: async ({ email, password }) => {
-      await new Promise(resolve => setTimeout(resolve, 800)); // Mock API call
-      if (email && password.length >= 6) {
-        const mockUser: User = {
-          id: 1,
-          name: email.split('@')[0],
-          email: email,
-        };
-        return mockUser;
-      }
-      throw new Error("Credenciales incorrectas. Inténtalo de nuevo.");
+  const loginMutation = useMutation<DotNetUserDto, Error, LoginRequestDto>({
+    mutationFn: async (credentials) => {
+      const response = await authService.login(credentials);
+      return response.user;
     },
     onSuccess: (data) => {
       TanstackQueryClient.setQueryData(USER_QUERY_KEY, data);
+      TanstackQueryClient.invalidateQueries({ queryKey: ['cart'] });
+      TanstackQueryClient.invalidateQueries({ queryKey: ['wishlist'] });
       toast({
         title: "Sesión iniciada",
-        description: `Bienvenido de nuevo, ${data.name}`,
+        description: `Bienvenido de nuevo, ${data.firstName}`,
       });
     },
     onError: (error) => {
@@ -113,24 +112,19 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   });
 
   // Mutation for registration
-  const registerMutation = useMutation<User, Error, { name: string, email: string, password: string }>({
-    mutationFn: async ({ name, email, password }) => {
-      await new Promise(resolve => setTimeout(resolve, 800)); // Mock API call
-      if (name && email && password.length >= 6) {
-        const mockUser: User = {
-          id: Date.now(),
-          name: name,
-          email: email,
-        };
-        return mockUser;
-      }
-      throw new Error("Por favor completa todos los campos correctamente.");
+  // Mutation for registration
+  const registerMutation = useMutation<DotNetUserDto, Error, RegisterRequestDto>({
+    mutationFn: async (userData) => {
+      const response = await authService.register(userData);
+      return response.user;
     },
     onSuccess: (data) => {
       TanstackQueryClient.setQueryData(USER_QUERY_KEY, data);
+      TanstackQueryClient.invalidateQueries({ queryKey: ['cart'] });
+      TanstackQueryClient.invalidateQueries({ queryKey: ['wishlist'] });
       toast({
         title: "¡Registro exitoso!",
-        description: `Bienvenido a Campo Artesano, ${data.name}`,
+        description: `Bienvenido a Campo Artesano, ${data.firstName}`,
       });
     },
     onError: (error) => {
@@ -143,13 +137,10 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   });
 
   // Mutation for updating user data
-  const updateUserMutation = useMutation<User, Error, Partial<User>>({
+  const updateUserMutation = useMutation<DotNetUserDto, Error, Partial<DotNetUserDto>>({
     mutationFn: async (userData) => {
-      await new Promise(resolve => setTimeout(resolve, 500)); // Mock API call
       if (!user) throw new Error("Usuario no autenticado.");
-      
-      const updatedUser = { ...user, ...userData };
-      return updatedUser;
+      return await authService.updateProfile(userData);
     },
     onSuccess: (data) => {
       TanstackQueryClient.setQueryData(USER_QUERY_KEY, data);
@@ -167,7 +158,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     },
   });
 
-  const login = async (credentials: { email: string, password: string }): Promise<boolean> => {
+  const login = async (credentials: LoginRequestDto): Promise<boolean> => {
     try {
       await loginMutation.mutateAsync(credentials);
       return true;
@@ -176,7 +167,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     }
   };
 
-  const register = async (userData: { name: string, email: string, password: string }): Promise<boolean> => {
+  const register = async (userData: RegisterRequestDto): Promise<boolean> => {
     try {
       await registerMutation.mutateAsync(userData);
       return true;
@@ -185,7 +176,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     }
   };
   
-  const updateUser = async (userData: Partial<User>): Promise<void> => {
+  const updateUser = async (userData: Partial<DotNetUserDto>): Promise<void> => {
     if (!isAuthenticated) {
         toast({ title: "Error", description: "Debes iniciar sesión para actualizar tu perfil.", variant: "destructive"});
         return;
@@ -193,14 +184,21 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     await updateUserMutation.mutateAsync(userData);
   };
 
-  const logout = () => {
-    TanstackQueryClient.setQueryData(USER_QUERY_KEY, null); // Clear user data from cache
-    // TanstackQueryClient.removeQueries({ queryKey: USER_QUERY_KEY }); // Alternative way to remove
-    localStorage.removeItem(AUTH_STORAGE_KEY); // Clear from localStorage
-    toast({
-      title: "Sesión cerrada",
-      description: "Has cerrado tu sesión correctamente.",
-    });
+  const logout = async () => {
+    try {
+      await authService.logout();
+      TanstackQueryClient.clear(); // Clear all cached data
+      toast({
+        title: "Sesión cerrada",
+        description: "Has cerrado tu sesión correctamente.",
+      });
+    } catch (error) {
+      console.error('Logout error:', error);
+      // Clear local data even if server logout fails
+      TanstackQueryClient.setQueryData(USER_QUERY_KEY, null);
+      TokenManager.clearTokens();
+      localStorage.removeItem(AUTH_STORAGE_KEY);
+    }
   };
 
   return (

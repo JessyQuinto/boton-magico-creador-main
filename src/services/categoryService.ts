@@ -1,4 +1,3 @@
-
 import { apiClient } from './apiClient';
 import { API_CONFIG } from '@/config/api';
 import type { CategoryDto } from '@/types/api';
@@ -12,6 +11,11 @@ class CategoryService {
   async getCategoryById(id: number): Promise<CategoryDto> {
     console.log(`Fetching category with ID: ${id}`);
     return apiClient.get<CategoryDto>(`${API_CONFIG.ENDPOINTS.CATEGORIES}/${id}`);
+  }
+
+  async getCategoryBySlug(slug: string): Promise<CategoryDto> {
+    console.log(`Fetching category with slug: ${slug}`);
+    return apiClient.get<CategoryDto>(`${API_CONFIG.ENDPOINTS.CATEGORIES}/slug/${slug}`);
   }
 
   async createCategory(category: Omit<CategoryDto, 'id' | 'createdAt' | 'updatedAt'>): Promise<CategoryDto> {

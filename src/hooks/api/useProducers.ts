@@ -7,7 +7,7 @@ import type { ProducerDto } from '@/types/api';
 export const useProducers = () => {
   return useQuery({
     queryKey: ['producers'],
-    queryFn: producerService.getAllProducers,
+    queryFn: producerService.getProducers,
     staleTime: 10 * 60 * 1000, // 10 minutes
   });
 };
