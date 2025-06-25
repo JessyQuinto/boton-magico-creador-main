@@ -157,11 +157,14 @@ export interface ProductFilters {
   sortBy?: 'price' | 'name' | 'date' | 'rating';
   sortOrder?: 'asc' | 'desc';
   page?: number;
+  pageSize?: number;
   limit?: number;
 }
 
 export interface SearchParams {
   query: string;
+  page?: number;
+  pageSize?: number;
   filters?: ProductFilters;
 }
 

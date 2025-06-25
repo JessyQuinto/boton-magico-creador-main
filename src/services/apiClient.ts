@@ -1,4 +1,4 @@
-import { API_CONFIG, HTTP_STATUS } from '@/config/api';
+import { API_CONFIG, HTTP_STATUS, ApiResponse as ApiResponseType, ApiMetadata, DotNetProblemDetails as ProblemDetails } from '@/config/api';
 import { TokenManager } from '@/utils/tokenManager';
 
 export interface ApiResponse<T = any> {
@@ -119,6 +119,7 @@ class ApiClient {
 
       const headers: Record<string, string> = {
         'Content-Type': 'application/json',
+        'Accept': 'application/json',
         ...(options.headers as Record<string, string>),
       };
 
@@ -156,7 +157,19 @@ class ApiClient {
 
       const contentType = response.headers.get('content-type');
       if (contentType?.includes('application/json')) {
-        return response.json();
+        const jsonResponse = await response.json();
+        
+        // Handle .NET 9 ApiResponse wrapper format
+        if (jsonResponse && typeof jsonResponse === 'object') {
+          // Check if it's wrapped in ApiResponse format
+          if ('data' in jsonResponse && 'success' in jsonResponse) {
+            return jsonResponse.data;
+          }
+          // Return the response as is if it's not wrapped
+          return jsonResponse;
+        }
+        
+        return jsonResponse;
       }
 
       return response.text() as unknown as T;
