@@ -1,0 +1,3 @@
+# Favicon PNG 32x32 - Base64 encoded
+# Este es un placeholder - necesitarás convertir el SVG a PNG usando una herramienta online
+# o reemplazar este archivo con tu PNG convertido desde el SVG

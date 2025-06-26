@@ -8,6 +8,8 @@ import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 import { useStore } from "@/store/useStore";
 import { useNotifications } from "@/hooks/useNotifications";
+import { authService } from "@/services/authService";
+import type { RegisterRequestDto } from "@/types/api";
 
 const Register = () => {
   const [formData, setFormData] = useState({
@@ -15,7 +17,9 @@ const Register = () => {
     lastName: "",
     email: "",
     password: "",
-    confirmPassword: ""
+    confirmPassword: "",
+    phone: "",
+    address: ""
   });
   const [acceptTerms, setAcceptTerms] = useState(false);
   const [loading, setLoading] = useState(false);
@@ -41,15 +45,16 @@ const Register = () => {
     e.preventDefault();
     setLoading(true);
 
-    // Validation
+    // Validación de términos y condiciones
     if (!acceptTerms) {
       showError("Debes aceptar los términos y condiciones");
       setLoading(false);
       return;
     }
 
+    // Validación básica
     if (!formData.firstName || !formData.lastName || !formData.email || !formData.password || !formData.confirmPassword) {
-      showError("Por favor, completa todos los campos");
+      showError("Por favor, completa todos los campos obligatorios");
       setLoading(false);
       return;
     }
@@ -72,21 +77,40 @@ const Register = () => {
       return;
     }
 
-    // Simulate API call
-    setTimeout(() => {
-      const userData = {
-        id: Date.now(), // Use numeric ID
-        name: `${formData.firstName} ${formData.lastName}`,
-        email: formData.email,
+    try {
+      // Preparar datos según la API documentation
+      const registerData: RegisterRequestDto = {
         firstName: formData.firstName,
-        lastName: formData.lastName
+        lastName: formData.lastName,
+        email: formData.email,
+        password: formData.password,
+        phone: formData.phone || undefined,
+        address: formData.address || undefined
       };
+
+      // Llamada real a la API
+      const authResponse = await authService.register(registerData);
       
-      login(userData);
+      // El servicio ya maneja el almacenamiento de tokens
+      // Actualizar el estado de autenticación en el store
+      login({
+        id: authResponse.user.id,
+        name: `${authResponse.user.firstName} ${authResponse.user.lastName}`,
+        email: authResponse.user.email,
+        firstName: authResponse.user.firstName,
+        lastName: authResponse.user.lastName,
+        phone: authResponse.user.phone,
+        address: authResponse.user.address
+      });
+
       showSuccess("¡Cuenta creada exitosamente! Bienvenido a Chocó Artesanal");
       navigate("/profile");
+    } catch (error) {
+      console.error('Registration error:', error);
+      showError(error instanceof Error ? error.message : "Error en el registro. Por favor, intenta nuevamente.");
+    } finally {
       setLoading(false);
-    }, 1000);
+    }
   };
 
   return (
@@ -184,6 +208,36 @@ const Register = () => {
                   onChange={handleInputChange}
                   className="mt-1 border-secondary/30 focus:border-action"
                   placeholder="Repite tu contraseña"
+                />
+              </div>
+
+              <div>
+                <Label htmlFor="phone" className="text-primary">
+                  Teléfono <span className="text-secondary">(opcional)</span>
+                </Label>
+                <Input
+                  id="phone"
+                  name="phone"
+                  type="tel"
+                  value={formData.phone}
+                  onChange={handleInputChange}
+                  className="mt-1 border-secondary/30 focus:border-action"
+                  placeholder="Ej: +57 300 123 4567"
+                />
+              </div>
+
+              <div>
+                <Label htmlFor="address" className="text-primary">
+                  Dirección <span className="text-secondary">(opcional)</span>
+                </Label>
+                <Input
+                  id="address"
+                  name="address"
+                  type="text"
+                  value={formData.address}
+                  onChange={handleInputChange}
+                  className="mt-1 border-secondary/30 focus:border-action"
+                  placeholder="Tu dirección completa"
                 />
               </div>
 

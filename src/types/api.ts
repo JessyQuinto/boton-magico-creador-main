@@ -94,6 +94,17 @@ export interface OrderDto {
   updatedAt: string;
 }
 
+export interface ReviewDto {
+  id: number;
+  productId: number;
+  userId: number;
+  userName: string;
+  rating: number;
+  comment: string;
+  createdAt: string;
+  updatedAt: string;
+}
+
 // Paginated Response
 export interface PaginatedResponse<T> {
   data: T[];
@@ -147,17 +158,19 @@ export interface OrderListParams {
 }
 
 export interface ProductFilters {
-  category?: string;
+  categoryId?: number;
+  producerId?: number;
+  searchTerm?: string;
+  featured?: boolean;
+  page?: number;
+  pageSize?: number;
   minPrice?: number;
   maxPrice?: number;
   artisan?: string;
   region?: string;
   inStock?: boolean;
-  featured?: boolean;
   sortBy?: 'price' | 'name' | 'date' | 'rating';
   sortOrder?: 'asc' | 'desc';
-  page?: number;
-  pageSize?: number;
   limit?: number;
 }
 

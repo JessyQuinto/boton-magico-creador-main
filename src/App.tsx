@@ -4,6 +4,7 @@ import { Toaster } from '@/components/ui/toaster';
 import { ThemeProvider } from '@/components/ui/theme-provider';
 import ErrorBoundary from '@/components/ErrorBoundary';
 import CookieBanner from '@/components/CookieBanner';
+import DevModeIndicator from '@/components/DevModeIndicator';
 
 // Pages
 import Index from '@/pages/Index';
@@ -49,22 +50,23 @@ function App() {
                 <Route path="/" element={<Index />} />
                 <Route path="/about" element={<About />} />
                 <Route path="/contact" element={<Contact />} />
-                <Route path="/productos" element={<Shop />} />
+                <Route path="/shop" element={<Shop />} />
                 <Route path="/producto/:slug" element={<ProductDetail />} />
-                <Route path="/carrito" element={<Cart />} />
+                <Route path="/cart" element={<Cart />} />
                 <Route path="/checkout" element={<Checkout />} />
                 <Route path="/guest-checkout" element={<GuestCheckout />} />
                 <Route path="/login" element={<Login />} />
-                <Route path="/registro" element={<Register />} />
-                <Route path="/perfil" element={<Profile />} />
+                <Route path="/register" element={<Register />} />
+                <Route path="/profile" element={<Profile />} />
                 <Route path="/stories" element={<Stories />} />
                 <Route path="/story/:id" element={<StoryDetail />} />
-                <Route path="/terminos" element={<Terms />} />
-                <Route path="/orden-confirmada" element={<OrderConfirmation />} />
-                <Route path="/favoritos" element={<Wishlist />} />
+                <Route path="/terms" element={<Terms />} />
+                <Route path="/order-confirmation" element={<OrderConfirmation />} />
+                <Route path="/wishlist" element={<Wishlist />} />
                 <Route path="*" element={<NotFound />} />
               </Routes>
               <CookieBanner />
+              <DevModeIndicator />
               <Toaster />
             </div>
           </Router>

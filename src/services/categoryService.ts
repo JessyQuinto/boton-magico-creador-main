@@ -3,10 +3,10 @@ import { API_CONFIG } from '@/config/api';
 import type { CategoryDto } from '@/types/api';
 
 class CategoryService {
-  async getAllCategories(): Promise<CategoryDto[]> {
+  async getCategories(): Promise<CategoryDto[]> {
     console.log('Fetching all categories');
     try {
-      return await apiClient.get<CategoryDto[]>(API_CONFIG.ENDPOINTS.CATEGORIES);
+      return await apiClient.get<CategoryDto[]>('/categories');
     } catch (error) {
       console.error('Failed to fetch categories:', error);
       throw new Error('No se pudieron cargar las categorías.');
@@ -16,7 +16,7 @@ class CategoryService {
   async getCategoryById(id: number): Promise<CategoryDto> {
     console.log(`Fetching category with ID: ${id}`);
     try {
-      return await apiClient.get<CategoryDto>(`${API_CONFIG.ENDPOINTS.CATEGORIES}/${id}`);
+      return await apiClient.get<CategoryDto>(`/categories/${id}`);
     } catch (error) {
       console.error(`Failed to fetch category ${id}:`, error);
       throw new Error('No se pudo cargar la categoría.');
@@ -26,7 +26,7 @@ class CategoryService {
   async getCategoryBySlug(slug: string): Promise<CategoryDto> {
     console.log(`Fetching category with slug: ${slug}`);
     try {
-      return await apiClient.get<CategoryDto>(`${API_CONFIG.ENDPOINTS.CATEGORIES}/slug/${slug}`);
+      return await apiClient.get<CategoryDto>(`/categories/slug/${slug}`);
     } catch (error) {
       console.error(`Failed to fetch category by slug ${slug}:`, error);
       throw new Error('No se pudo encontrar la categoría.');
