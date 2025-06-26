@@ -1,0 +1,37 @@
+{
+    "recommendations": [
+        // Extensiones esenciales para GitHub Copilot
+        "github.copilot",
+        "github.copilot-chat",
+        // Extensiones para mejorar comprensión de TypeScript/React
+        "ms-vscode.vscode-typescript-next",
+        "bradlc.vscode-tailwindcss",
+        "esbenp.prettier-vscode",
+        "dbaeumer.vscode-eslint",
+        // Extensiones para mejor IntelliSense
+        "visualstudioexptteam.vscodeintellicode",
+        "ms-vscode.vscode-json",
+        "christian-kohler.path-intellisense",
+        "zignd.html-css-class-completion",
+        // Extensiones para mejor navegación y comprensión
+        "ms-vscode.vscode-typescript-next",
+        "bradlc.vscode-tailwindcss",
+        "formulahendry.auto-rename-tag",
+        "christian-kohler.npm-intellisense",
+        // Extensiones para mejorar el workspace
+        "gruntfuggly.todo-tree",
+        "aaron-bond.better-comments",
+        "usernamehw.errorlens",
+        "oderwat.indent-rainbow",
+        // Extensiones específicas para React
+        "dsznajder.es7-react-js-snippets",
+        "rodrigovallades.es7-react-js-snippets",
+        "msjsdiag.vscode-react-native",
+        // Git y control de versiones
+        "eamodio.gitlens",
+        "donjayamanne.githistory",
+        // Herramientas de desarrollo
+        "rangav.vscode-thunder-client",
+        "humao.rest-client"
+    ]
+}
