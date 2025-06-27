@@ -1,6 +1,7 @@
-// Unified API Configuration for .NET 9 Backend
+// Backend API Configuration - TesorosChoco
 export const API_CONFIG = {
-  BASE_URL: import.meta.env.VITE_API_BASE_URL || 'http://localhost:5000/api/v1',
+  BASE_URL: import.meta.env.VITE_API_BASE_URL || 'https://api.tesoroschoco.com/api/v1',
+  FALLBACK_URL: 'http://localhost:5000/api/v1', // For development
   TIMEOUT: 10000,
   RETRY_ATTEMPTS: 3,
   HEADERS: {
@@ -13,21 +14,30 @@ export const API_CONFIG = {
       REGISTER: '/auth/register',
       REFRESH: '/auth/refresh-token',
       LOGOUT: '/auth/logout',
-      PROFILE: '/auth/profile',
-      REVOKE: '/auth/revoke-token',
+      FORGOT_PASSWORD: '/auth/forgot-password',
+      RESET_PASSWORD: '/auth/reset-password',
     },
     PRODUCTS: {
       BASE: '/products',
-      FEATURED: '/products/featured',
-      SEARCH: '/products/search',
-      BY_CATEGORY: '/products/category',
-      BY_SLUG: '/products/slug',
-      REVIEWS: '/products/{id}/reviews',
+      BY_ID: '/products/{id}',
+      FEATURED: '/products?featured=true',
+      SEARCH: '/products',
+      BY_CATEGORY: '/products?categoryId={categoryId}',
+      BY_PRODUCER: '/products?producerId={producerId}',
+    },
+    CART: {
+      BASE: '/cart',
+      ITEMS: '/cart/items',
+      ITEM_BY_ID: '/cart/items/{id}',
+    },
+    ORDERS: {
+      BASE: '/orders',
+      BY_ID: '/orders/{id}',
+      BY_USER: '/orders/user/{userId}',
+      UPDATE_STATUS: '/orders/{id}/status',
     },
     CATEGORIES: '/categories',
     PRODUCERS: '/producers',
-    CART: '/cart',
-    ORDERS: '/orders',
     WISHLIST: '/wishlist',
     USERS: '/users',
     PAYMENTS: '/payments',
@@ -46,21 +56,30 @@ export const HTTP_STATUS = {
   INTERNAL_SERVER_ERROR: 500,
 } as const;
 
-// API Response Types according to integration guide
-export interface ApiResponse<T = any> {
+// Backend API Response Types según documentación
+export interface BackendApiResponse<T = any> {
   data: T;
   success: boolean;
   message: string;
-  metadata: ApiMetadata;
+  metadata: {
+    timestamp: string;
+    version: string;
+  };
 }
 
 export interface ApiMetadata {
   timestamp: string;
   version: string;
-  requestId: string;
 }
 
-// .NET Problem Details format
+// Error response format
+export interface BackendErrorResponse {
+  data: null;
+  success: false;
+  message: string;
+}
+
+// .NET Problem Details format para errores específicos
 export interface DotNetProblemDetails {
   type?: string;
   title: string;

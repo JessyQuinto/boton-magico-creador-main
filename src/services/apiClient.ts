@@ -1,4 +1,4 @@
-import { API_CONFIG, HTTP_STATUS, ApiResponse as ApiResponseType, ApiMetadata, DotNetProblemDetails as ProblemDetails } from '@/config/api';
+import { API_CONFIG, HTTP_STATUS, BackendApiResponse, ApiMetadata, DotNetProblemDetails as ProblemDetails } from '@/config/api';
 import { TokenManager } from '@/utils/tokenManager';
 
 export interface ApiResponse<T = any> {
@@ -53,11 +53,13 @@ export class NetworkError extends Error {
 
 class ApiClient {
   private baseURL: string;
+  private fallbackURL: string;
   private timeout: number;
   private retryAttempts: number;
 
   constructor() {
     this.baseURL = API_CONFIG.BASE_URL;
+    this.fallbackURL = API_CONFIG.FALLBACK_URL;
     this.timeout = API_CONFIG.TIMEOUT;
     this.retryAttempts = API_CONFIG.RETRY_ATTEMPTS;
   }
@@ -74,25 +76,25 @@ class ApiClient {
           'Accept': 'application/json'
         },
         body: JSON.stringify({ 
-          refreshToken: refreshToken,
-          // .NET 9 puede requerir estos campos adicionales
-          tokenType: 'Bearer'
+          refreshToken: refreshToken
         }),
       });
 
       if (response.ok) {
-        const data = await response.json();
-        // .NET 9 típicamente devuelve estos campos
-        TokenManager.setTokens(
-          data.accessToken || data.access_token, 
-          data.refreshToken || data.refresh_token, 
-          data.expiresIn || data.expires_in
-        );
-        return true;
+        const backendResponse: BackendApiResponse<any> = await response.json();
+        
+        if (backendResponse.success && backendResponse.data) {
+          const data = backendResponse.data;
+          TokenManager.setTokens(
+            data.accessToken, 
+            data.refreshToken, 
+            data.expiresIn
+          );
+          return true;
+        }
       } else {
-        // Manejo específico de errores .NET
         const errorData = await response.json().catch(() => null);
-        console.error('.NET refresh token error:', errorData);
+        console.error('Backend refresh token error:', errorData);
       }
     } catch (error) {
       console.error('Token refresh failed:', error);
@@ -107,6 +109,8 @@ class ApiClient {
     options: RequestInit = {},
     attempt: number = 1
   ): Promise<T> {
+    let currentBaseURL = this.baseURL;
+    
     try {
       const accessToken = TokenManager.getAccessToken();
       
@@ -130,7 +134,7 @@ class ApiClient {
       const controller = new AbortController();
       const timeoutId = setTimeout(() => controller.abort(), this.timeout);
 
-      const response = await fetch(`${this.baseURL}${url}`, {
+      const response = await fetch(`${currentBaseURL}${url}`, {
         ...options,
         headers,
         signal: controller.signal,
@@ -147,11 +151,22 @@ class ApiClient {
         }
 
         const errorData = await response.json().catch(() => ({}));
+        
+        // Manejar respuesta de error del backend
+        if (errorData && typeof errorData === 'object') {
+          const errorMessage = errorData.message || errorData.title || `HTTP ${response.status}`;
+          throw new ApiError(
+            errorMessage,
+            response.status,
+            errorData.code,
+            errorData.field,
+            errorData
+          );
+        }
+        
         throw new ApiError(
-          errorData.message || `HTTP ${response.status}`,
-          response.status,
-          errorData.code,
-          errorData.field
+          `HTTP ${response.status}`,
+          response.status
         );
       }
 
@@ -159,13 +174,28 @@ class ApiClient {
       if (contentType?.includes('application/json')) {
         const jsonResponse = await response.json();
         
-        // Handle .NET 9 ApiResponse wrapper format
+        // Manejar formato de respuesta del backend según documentación
         if (jsonResponse && typeof jsonResponse === 'object') {
-          // Check if it's wrapped in ApiResponse format
+          // Si tiene la estructura de BackendApiResponse
           if ('data' in jsonResponse && 'success' in jsonResponse) {
-            return jsonResponse.data;
+            if (jsonResponse.success) {
+              // Retornar los datos desenvueltos
+              return jsonResponse.data;
+            } else {
+              // Error envuelto en formato backend
+              throw new ApiError(
+                jsonResponse.message || 'Backend error',
+                response.status
+              );
+            }
           }
-          // Return the response as is if it's not wrapped
+          
+          // Si es un array directo (para algunos endpoints)
+          if (Array.isArray(jsonResponse)) {
+            return jsonResponse as T;
+          }
+          
+          // Retornar la respuesta tal como es si no tiene estructura específica
           return jsonResponse;
         }
         
@@ -180,6 +210,13 @@ class ApiClient {
 
       if (error instanceof ApiError) {
         throw error;
+      }
+
+      // Fallback al servidor de desarrollo si el principal falla
+      if (attempt === 1 && currentBaseURL === this.baseURL && this.fallbackURL !== this.baseURL) {
+        console.warn('Primary API failed, trying fallback URL...');
+        this.baseURL = this.fallbackURL;
+        return this.makeRequest<T>(url, options, attempt);
       }
 
       if (attempt < this.retryAttempts && error.name === 'TypeError') {
