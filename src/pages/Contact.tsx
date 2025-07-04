@@ -1,13 +1,13 @@
 
-import { useState } from "react";
-import Header from "@/components/Header";
 import Footer from "@/components/Footer";
+import Header from "@/components/Header";
+import { Breadcrumb, BreadcrumbItem, BreadcrumbLink, BreadcrumbList, BreadcrumbPage, BreadcrumbSeparator } from "@/components/ui/breadcrumb";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { useNotifications } from "@/hooks/useNotifications";
-import { Breadcrumb, BreadcrumbItem, BreadcrumbLink, BreadcrumbList, BreadcrumbPage, BreadcrumbSeparator } from "@/components/ui/breadcrumb";
-import { MapPin, Phone, Mail, Clock } from "lucide-react";
+import { useToast } from "@/hooks/use-toast";
+import { Clock, Mail, MapPin, Phone } from "lucide-react";
+import { useState } from "react";
 
 const Contact = () => {
   const [formData, setFormData] = useState({
@@ -17,7 +17,7 @@ const Contact = () => {
     message: ""
   });
   const [loading, setLoading] = useState(false);
-  const { showSuccess, showError } = useNotifications();
+  const { toast } = useToast();
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     const { name, value } = e.target;
@@ -38,20 +38,31 @@ const Contact = () => {
 
     // Validación
     if (!formData.name || !formData.email || !formData.subject || !formData.message) {
-      showError("Por favor, completa todos los campos");
+      toast({
+        title: "Error",
+        description: "Por favor, completa todos los campos",
+        variant: "destructive"
+      });
       setLoading(false);
       return;
     }
 
     if (!validateEmail(formData.email)) {
-      showError("Por favor, ingresa un email válido");
+      toast({
+        title: "Error",
+        description: "Por favor, ingresa un email válido",
+        variant: "destructive"
+      });
       setLoading(false);
       return;
     }
 
     // Simular envío
     setTimeout(() => {
-      showSuccess("¡Mensaje enviado exitosamente! Te contactaremos pronto.");
+      toast({
+        title: "¡Mensaje enviado!",
+        description: "Te contactaremos pronto."
+      });
       setFormData({
         name: "",
         email: "",
@@ -65,7 +76,7 @@ const Contact = () => {
   return (
     <div className="min-h-screen bg-background">
       <Header />
-      
+
       <main className="container mx-auto px-4 py-8">
         <Breadcrumb className="mb-8">
           <BreadcrumbList>
@@ -90,7 +101,7 @@ const Contact = () => {
               <h2 className="text-2xl font-bold text-primary mb-6">
                 Información de Contacto
               </h2>
-              
+
               <div className="space-y-6">
                 <div className="flex items-start space-x-4">
                   <MapPin className="h-6 w-6 text-action mt-1 flex-shrink-0" />

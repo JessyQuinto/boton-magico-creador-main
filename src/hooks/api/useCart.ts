@@ -1,7 +1,8 @@
 
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { cartService } from '@/services/cartService';
 import { useToast } from '@/hooks/use-toast';
+import { TOAST_MESSAGES } from '@/lib/toast-helpers';
+import { cartService } from '@/services/cartService';
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { useAuth } from './useAuth';
 
 const CART_QUERY_KEY = ['cart'];
@@ -25,15 +26,12 @@ export const useCart = () => {
       cartService.addToCart(productId, quantity),
     onSuccess: (data) => {
       queryClient.setQueryData(CART_QUERY_KEY, data);
-      toast({
-        title: 'Producto agregado',
-        description: 'El producto ha sido agregado al carrito.',
-      });
+      toast(TOAST_MESSAGES.CART_ITEM_ADDED);
     },
     onError: (error) => {
       toast({
-        title: 'Error al agregar producto',
-        description: error.message || 'No se pudo agregar el producto al carrito.',
+        ...TOAST_MESSAGES.CART_ERROR_ADD,
+        description: error.message || TOAST_MESSAGES.CART_ERROR_ADD.description,
         variant: 'destructive',
       });
     },
@@ -48,7 +46,7 @@ export const useCart = () => {
     },
     onError: (error) => {
       toast({
-        title: 'Error al actualizar carrito',
+        ...TOAST_MESSAGES.CART_ERROR_UPDATE,
         description: error.message,
         variant: 'destructive',
       });
@@ -60,14 +58,11 @@ export const useCart = () => {
     mutationFn: cartService.removeFromCart,
     onSuccess: (data) => {
       queryClient.setQueryData(CART_QUERY_KEY, data);
-      toast({
-        title: 'Producto eliminado',
-        description: 'El producto ha sido eliminado del carrito.',
-      });
+      toast(TOAST_MESSAGES.CART_ITEM_REMOVED);
     },
     onError: (error) => {
       toast({
-        title: 'Error al eliminar producto',
+        ...TOAST_MESSAGES.CART_ERROR_REMOVE,
         description: error.message,
         variant: 'destructive',
       });
@@ -79,14 +74,11 @@ export const useCart = () => {
     mutationFn: cartService.clearCart,
     onSuccess: () => {
       queryClient.setQueryData(CART_QUERY_KEY, null);
-      toast({
-        title: 'Carrito vacío',
-        description: 'Todos los productos han sido eliminados del carrito.',
-      });
+      toast(TOAST_MESSAGES.CART_CLEARED);
     },
     onError: (error) => {
       toast({
-        title: 'Error al vaciar carrito',
+        ...TOAST_MESSAGES.CART_ERROR_CLEAR,
         description: error.message,
         variant: 'destructive',
       });
@@ -107,7 +99,7 @@ export const useCart = () => {
     items: cartQuery.data?.items || [],
     total: cartQuery.data?.total || 0,
     itemCount: cartQuery.data?.items?.reduce((sum, item) => sum + item.quantity, 0) || 0,
-    
+
     // Loading states
     isLoading: cartQuery.isLoading,
     isAddingToCart: addToCartMutation.isPending,
@@ -115,14 +107,14 @@ export const useCart = () => {
     isRemoving: removeFromCartMutation.isPending,
     isClearing: clearCartMutation.isPending,
     isSyncing: syncCartMutation.isPending,
-    
+
     // Actions
     addToCart: addToCartMutation.mutate,
     updateQuantity: updateCartItemMutation.mutate,
     removeFromCart: removeFromCartMutation.mutate,
     clearCart: clearCartMutation.mutate,
     syncCart: syncCartMutation.mutate,
-    
+
     // Utilities
     refetch: cartQuery.refetch,
     error: cartQuery.error,

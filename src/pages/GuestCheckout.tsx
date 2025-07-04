@@ -1,17 +1,17 @@
 
-import { useState } from "react";
-import { CreditCard, MapPin, User, Mail, Phone } from "lucide-react";
-import Header from "@/components/Header";
 import Footer from "@/components/Footer";
+import Header from "@/components/Header";
+import LoadingSpinner from "@/components/LoadingSpinner";
 import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Checkbox } from "@/components/ui/checkbox";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
-import { Checkbox } from "@/components/ui/checkbox";
-import LoadingSpinner from "@/components/LoadingSpinner";
-import { useStore, useCartItems, useCartTotal } from "@/store/useStore";
-import { useNotifications } from "@/hooks/useNotifications";
+import { useToast } from "@/hooks/use-toast";
+import { useCartItems, useCartTotal, useStore } from "@/store/useStore";
+import { CreditCard, MapPin, User } from "lucide-react";
+import { useState } from "react";
 
 interface GuestInfo {
   email: string;
@@ -28,8 +28,8 @@ const GuestCheckout = () => {
   const { completeOrder } = useStore();
   const cartItems = useCartItems();
   const cartTotal = useCartTotal();
-  const { showSuccess, showError } = useNotifications();
-  
+  const { toast } = useToast();
+
   const [guestInfo, setGuestInfo] = useState<GuestInfo>({
     email: "",
     firstName: "",
@@ -40,7 +40,7 @@ const GuestCheckout = () => {
     postalCode: "",
     department: ""
   });
-  
+
   const [paymentMethod, setPaymentMethod] = useState("credit-card");
   const [processing, setProcessing] = useState(false);
   const [acceptTerms, setAcceptTerms] = useState(false);
@@ -74,7 +74,7 @@ const GuestCheckout = () => {
     if (!guestInfo.city.trim()) newErrors.city = "Ciudad es requerida";
     if (!guestInfo.postalCode.trim()) newErrors.postalCode = "Código postal es requerido";
     if (!guestInfo.department.trim()) newErrors.department = "Departamento es requerido";
-    
+
     if (!acceptTerms) newErrors.terms = "Debes aceptar los términos y condiciones";
 
     setErrors(newErrors);
@@ -92,13 +92,13 @@ const GuestCheckout = () => {
     if (!validateForm() || cartItems.length === 0) return;
 
     setProcessing(true);
-    
+
     try {
       await new Promise(resolve => setTimeout(resolve, 2000));
-      
+
       completeOrder();
       showSuccess("¡Pedido realizado con éxito!");
-      
+
       const orderId = Math.random().toString(36).substr(2, 9);
       window.location.href = `/order-confirmation?order_id=${orderId}&guest=true`;
     } catch (error) {
@@ -129,7 +129,7 @@ const GuestCheckout = () => {
   return (
     <div className="min-h-screen bg-background">
       <Header />
-      
+
       <main className="container mx-auto px-4 py-4 md:py-8">
         <h1 className="text-2xl md:text-4xl font-bold text-primary mb-6 md:mb-8">
           Checkout como Invitado
@@ -158,7 +158,7 @@ const GuestCheckout = () => {
                     />
                     {errors.firstName && <p className="text-red-500 text-sm mt-1">{errors.firstName}</p>}
                   </div>
-                  
+
                   <div>
                     <Label htmlFor="lastName">Apellido *</Label>
                     <Input
@@ -239,7 +239,7 @@ const GuestCheckout = () => {
                     />
                     {errors.city && <p className="text-red-500 text-sm mt-1">{errors.city}</p>}
                   </div>
-                  
+
                   <div>
                     <Label htmlFor="department">Departamento *</Label>
                     <select

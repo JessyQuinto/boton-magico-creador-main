@@ -1,15 +1,15 @@
-import { useState } from "react";
+import Footer from "@/components/Footer";
+import Header from "@/components/Header";
 import { Button } from "@/components/ui/button";
+import { Checkbox } from "@/components/ui/checkbox";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Checkbox } from "@/components/ui/checkbox";
-import { Link, useNavigate } from "react-router-dom";
-import Header from "@/components/Header";
-import Footer from "@/components/Footer";
-import { useStore } from "@/store/useStore";
-import { useNotifications } from "@/hooks/useNotifications";
+import { useToast } from "@/hooks/use-toast";
 import { authService } from "@/services/authService";
+import { useStore } from "@/store/useStore";
 import type { RegisterRequestDto } from "@/types/api";
+import { useState } from "react";
+import { Link, useNavigate } from "react-router-dom";
 
 const Register = () => {
   const [formData, setFormData] = useState({
@@ -23,9 +23,9 @@ const Register = () => {
   });
   const [acceptTerms, setAcceptTerms] = useState(false);
   const [loading, setLoading] = useState(false);
-  
+
   const { login } = useStore();
-  const { showSuccess, showError } = useNotifications();
+  const { toast } = useToast();
   const navigate = useNavigate();
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -90,7 +90,7 @@ const Register = () => {
 
       // Llamada real a la API
       const authResponse = await authService.register(registerData);
-      
+
       // El servicio ya maneja el almacenamiento de tokens
       // Actualizar el estado de autenticación en el store
       login({
@@ -116,7 +116,7 @@ const Register = () => {
   return (
     <div className="min-h-screen bg-white">
       <Header />
-      
+
       <main className="container mx-auto px-4 py-16">
         <div className="max-w-md mx-auto">
           <div className="bg-white border border-secondary/20 rounded-xl p-8 shadow-lg">

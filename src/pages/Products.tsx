@@ -5,7 +5,8 @@ import Contenedor from '@/components/layout/Container';
 import Navbar from '@/components/layout/Navbar';
 import ProductCard from '@/components/product/ProductCard';
 import { Skeleton } from "@/components/ui/skeleton";
-import { useCategories, useProducts } from '@/hooks/useApi';
+import { useCategories } from '@/hooks/api/useCategories';
+import { useProducts } from '@/hooks/api/useProducts';
 import { ProductFilters } from '@/types/api';
 import { useEffect, useState } from 'react';
 
@@ -119,8 +120,8 @@ const Products = () => {
                 key={category.id}
                 onClick={() => handleCategoryFilter(category.slug)}
                 className={`px-6 py-2 rounded-xl text-sm font-medium transition-colors ${filters.category === category.slug || (category.slug === 'all' && !filters.category)
-                    ? 'bg-[#0cf2a5] text-white'
-                    : 'bg-[#f0f5f3] dark:bg-gray-700 text-[#111816] dark:text-white hover:bg-[#0cf2a5] hover:text-white'
+                  ? 'bg-[#0cf2a5] text-white'
+                  : 'bg-[#f0f5f3] dark:bg-gray-700 text-[#111816] dark:text-white hover:bg-[#0cf2a5] hover:text-white'
                   }`}
               >
                 {category.name}

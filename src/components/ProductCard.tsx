@@ -1,6 +1,6 @@
 import { Button } from "@/components/ui/button";
-import { useWishlist } from "@/hooks/useApi";
-import { useCart } from "@/hooks/useCart";
+import { useWishlist } from "@/hooks/api/useWishlist";
+import { useLocalCart } from "@/hooks/useCart";
 import { useNotifications } from "@/hooks/useNotifications";
 import { useStore } from "@/store/useStore";
 import { CartItem, Product, ProductWithStory } from "@/types";
@@ -18,7 +18,7 @@ const ProductCard = ({ product }: ProductCardProps) => {
   const wishlist = useStore(state => state.wishlist);
 
   // Use API hooks for server synchronization
-  const { addToCartCall, updateCartItem } = useCart();
+  const { addToCart } = useLocalCart();
   const { addToWishlistCall, removeFromWishlistCall, isProductInWishlist } = useWishlist();
 
   const { showSuccess, showError } = useNotifications();
@@ -124,8 +124,8 @@ const ProductCard = ({ product }: ProductCardProps) => {
           onClick={handleWishlistToggle}
           aria-label={inWishlist ? `Eliminar ${product.name} de favoritos` : `Añadir ${product.name} a favoritos`}
           className={`absolute top-3 left-3 p-2 min-w-[44px] min-h-[44px] rounded-full backdrop-blur-sm transition-all ${inWishlist
-              ? 'bg-action text-background hover:bg-action/90'
-              : 'bg-background/95 text-secondary hover:bg-background hover:text-action'
+            ? 'bg-action text-background hover:bg-action/90'
+            : 'bg-background/95 text-secondary hover:bg-background hover:text-action'
             }`}
         >
           <Heart className={`h-4 w-4 ${inWishlist ? 'fill-current' : ''}`} />

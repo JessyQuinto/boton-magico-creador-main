@@ -5,9 +5,10 @@ import ProductReviews from "@/components/ProductReviews";
 import { Badge } from "@/components/ui/badge";
 import { Breadcrumb, BreadcrumbItem, BreadcrumbLink, BreadcrumbList, BreadcrumbPage, BreadcrumbSeparator } from "@/components/ui/breadcrumb";
 import { Button } from "@/components/ui/button";
-import { useProducts, useWishlist } from "@/hooks/useApi";
-import { useCart } from "@/hooks/useCart";
-import { useNotifications } from "@/hooks/useNotifications";
+import { useProducts } from "@/hooks/api/useProducts";
+import { useWishlist } from "@/hooks/api/useWishlist";
+import { useToast } from "@/hooks/use-toast";
+import { useLocalCart } from "@/hooks/useCart";
 import { Heart, RotateCcw, Shield, ShoppingCart, Star, Truck } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
 import { useParams } from "react-router-dom";
@@ -25,7 +26,7 @@ const ProductDetail = () => {
   const {
     addToCartCall,
     fetchCart
-  } = useCart();
+  } = useLocalCart();
 
   const {
     wishlist,
@@ -34,7 +35,7 @@ const ProductDetail = () => {
     fetchWishlist
   } = useWishlist();
 
-  const { showSuccess, showError } = useNotifications();
+  const { toast } = useToast();
 
   useEffect(() => {
     if (slug) {
@@ -176,8 +177,8 @@ const ProductDetail = () => {
                     <Star
                       key={i}
                       className={`h-4 w-4 ${i < Math.floor(product.rating || 0)
-                          ? 'fill-yellow-400 text-yellow-400'
-                          : 'text-gray-300'
+                        ? 'fill-yellow-400 text-yellow-400'
+                        : 'text-gray-300'
                         }`}
                     />
                   ))}
@@ -282,8 +283,8 @@ const ProductDetail = () => {
                   variant="outline"
                   size="lg"
                   className={`border-primary-action ${inWishlist
-                      ? 'bg-primary-action text-white'
-                      : 'text-primary-action hover:bg-primary-action hover:text-white'
+                    ? 'bg-primary-action text-white'
+                    : 'text-primary-action hover:bg-primary-action hover:text-white'
                     } border-2 shadow-sm hover:shadow-md transition-all`}
                 >
                   <Heart className={`h-5 w-5 ${inWishlist ? 'fill-current' : ''}`} />

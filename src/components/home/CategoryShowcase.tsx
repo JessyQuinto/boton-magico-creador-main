@@ -1,21 +1,19 @@
 
+import Container from '@/components/layout/Container';
+import LoadingSpinner from '@/components/LoadingSpinner';
+import { useCategories } from '@/hooks/api/useCategories';
+import type { CategoryDto } from '@/types/api';
 import React from 'react';
 import { Link } from 'react-router-dom';
-import Container from '@/components/layout/Container';
-import { useCategories } from '@/hooks/useApi';
-import LoadingSpinner from '@/components/LoadingSpinner';
 
 const CategoryShowcase: React.FC = () => {
-  const { 
-    list,
-    fetchCategories
+  const {
+    data: categories,
+    isLoading,
+    error
   } = useCategories();
 
-  React.useEffect(() => {
-    fetchCategories();
-  }, [fetchCategories]);
-
-  if (list.loading) {
+  if (isLoading) {
     return (
       <section className="py-8 sm:py-12 lg:py-16 bg-white">
         <Container>
@@ -27,19 +25,19 @@ const CategoryShowcase: React.FC = () => {
     );
   }
 
-  if (list.error) {
+  if (error) {
     return (
       <section className="py-8 sm:py-12 lg:py-16 bg-white">
         <Container>
           <div className="text-center text-red-600">
-            Error loading categories: {list.error}
+            Error loading categories: {error.message}
           </div>
         </Container>
       </section>
     );
   }
 
-  const categories = list.data || [];
+  const categoriesList = (categories as CategoryDto[]) || [];
   return (
     <section className="py-8 sm:py-12 lg:py-16 bg-white">
       <Container>
@@ -51,9 +49,9 @@ const CategoryShowcase: React.FC = () => {
             Each piece tells a story of tradition, skill, and the vibrant culture of the Colombian Pacific
           </p>
         </div>
-        
+
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6 px-4 sm:px-0">
-          {categories.map((category) => (
+          {categoriesList.map((category) => (
             <Link
               key={category.slug}
               to={`/productos?categoria=${category.slug}`}

@@ -1,16 +1,17 @@
 
 import { useStore } from '@/store/useStore';
+import type { CartItem } from '@/types';
 
-export interface CartContextType {
-  items: any[];
+export interface LocalCartContextType {
+  items: CartItem[];
   total: number;
-  addToCart: (product: any, quantity?: number) => void;
+  addToCart: (item: CartItem) => void;
   removeFromCart: (productId: number) => void;
   updateQuantity: (productId: number, quantity: number) => void;
   clearCart: () => void;
 }
 
-export const useCart = (): CartContextType => {
+export const useLocalCart = (): LocalCartContextType => {
   const { cartItems, cartTotal, addToCart, removeFromCart, updateCartQuantity, clearCart } = useStore();
 
   const items = cartItems.map(item => ({

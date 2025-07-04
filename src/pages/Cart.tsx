@@ -4,8 +4,8 @@ import LoadingSpinner from "@/components/LoadingSpinner";
 import { Breadcrumb, BreadcrumbItem, BreadcrumbLink, BreadcrumbList, BreadcrumbPage, BreadcrumbSeparator } from "@/components/ui/breadcrumb";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
-import { useCart } from "@/hooks/useCart";
-import { useNotifications } from "@/hooks/useNotifications";
+import { useToast } from "@/hooks/use-toast";
+import { useLocalCart } from "@/hooks/useCart";
 import { useAuth } from "@/store/useStore";
 import { ArrowLeft, Minus, Plus, ShoppingBag, Trash2, User, UserPlus } from "lucide-react";
 import { useEffect, useState } from "react";
@@ -18,10 +18,10 @@ const Cart = () => {
     updateCartItem,
     removeFromCart,
     clearCartCall
-  } = useCart();
+  } = useLocalCart();
 
   const { isAuthenticated } = useAuth();
-  const { showSuccess, showError } = useNotifications();
+  const { toast } = useToast();
   const [acceptTerms, setAcceptTerms] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
 

@@ -1,25 +1,26 @@
 
-import { useState, useEffect } from "react";
+import Footer from "@/components/Footer";
+import Header from "@/components/Header";
 import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { User, ShoppingBag, Heart, Edit2, MapPin, Plus, Trash2, Star } from "lucide-react";
+import { useToast } from "@/hooks/use-toast";
+import type { Address } from "@/store/useStore";
+import { useAuth, useCartItems, useStore, useWishlist } from "@/store/useStore";
+import { Edit2, Heart, MapPin, Plus, ShoppingBag, Star, Trash2, User } from "lucide-react";
+import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import Header from "@/components/Header";
-import Footer from "@/components/Footer";
-import { useStore, useAuth, useCartItems, useWishlist } from "@/store/useStore";
-import { useNotifications } from "@/hooks/useNotifications";
 
 const Profile = () => {
   const { updateUser, addAddress, updateAddress, deleteAddress, setDefaultAddress } = useStore();
   const cartItems = useCartItems();
   const wishlist = useWishlist();
   const { user, isLoggedIn } = useAuth();
-  const { showSuccess, showError } = useNotifications();
+  const { toast } = useToast();
   const navigate = useNavigate();
-  
+
   const [isEditing, setIsEditing] = useState(false);
   const [editingAddress, setEditingAddress] = useState<string | null>(null);
   const [showNewAddressForm, setShowNewAddressForm] = useState(false);
@@ -43,7 +44,7 @@ const Profile = () => {
       navigate("/login");
       return;
     }
-    
+
     setFormData({
       firstName: user.firstName || "",
       lastName: user.lastName || "",
@@ -70,7 +71,11 @@ const Profile = () => {
 
   const handleSaveProfile = () => {
     if (!formData.firstName || !formData.lastName || !formData.email) {
-      showError("Por favor, completa todos los campos obligatorios");
+      toast({
+        title: "Error",
+        description: "Por favor, completa todos los campos obligatorios",
+        variant: "destructive"
+      });
       return;
     }
 
@@ -81,9 +86,12 @@ const Profile = () => {
       phone: formData.phone,
       name: `${formData.firstName} ${formData.lastName}`
     });
-    
+
     setIsEditing(false);
-    showSuccess("Perfil actualizado exitosamente");
+    toast({
+      title: "Perfil actualizado",
+      description: "Perfil actualizado exitosamente"
+    });
   };
 
   const handleSaveAddress = () => {
@@ -105,7 +113,7 @@ const Profile = () => {
       showSuccess("Dirección agregada exitosamente");
       setShowNewAddressForm(false);
     }
-    
+
     setNewAddress({
       name: "",
       fullName: "",
@@ -116,7 +124,7 @@ const Profile = () => {
     });
   };
 
-  const handleEditAddress = (address: any) => {
+  const handleEditAddress = (address: Address) => {
     setNewAddress({
       name: address.name || "",
       fullName: address.fullName || "",
@@ -176,7 +184,7 @@ const Profile = () => {
   return (
     <div className="min-h-screen bg-background">
       <Header />
-      
+
       <main className="container mx-auto px-4 py-4 md:py-8">
         <div className="max-w-4xl mx-auto">
           <div className="mb-6 md:mb-8">
@@ -258,7 +266,7 @@ const Profile = () => {
                       />
                     </div>
                   </div>
-                  
+
                   <div>
                     <Label htmlFor="email" className="text-primary">
                       Correo Electrónico *
@@ -442,7 +450,7 @@ const Profile = () => {
                                 />
                               </div>
                             </div>
-                            
+
                             <div>
                               <Label htmlFor="addressAddress">Dirección *</Label>
                               <Input

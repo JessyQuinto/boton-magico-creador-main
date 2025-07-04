@@ -1,8 +1,9 @@
 
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { categoryService } from '@/services/categoryService';
 import { useToast } from '@/hooks/use-toast';
+import { TOAST_MESSAGES } from '@/lib/toast-helpers';
+import { categoryService } from '@/services/categoryService';
 import type { CategoryDto } from '@/types/api';
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 
 export const useCategories = () => {
   return useQuery({
@@ -28,14 +29,11 @@ export const useCreateCategory = () => {
     mutationFn: categoryService.createCategory,
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['categories'] });
-      toast({
-        title: 'Categoría creada',
-        description: 'La categoría ha sido creada exitosamente.',
-      });
+      toast(TOAST_MESSAGES.CATEGORY_CREATED);
     },
     onError: (error) => {
       toast({
-        title: 'Error al crear categoría',
+        ...TOAST_MESSAGES.CATEGORY_ERROR_CREATE,
         description: error.message,
         variant: 'destructive',
       });
@@ -53,14 +51,11 @@ export const useUpdateCategory = () => {
     onSuccess: (_, { id }) => {
       queryClient.invalidateQueries({ queryKey: ['categories'] });
       queryClient.invalidateQueries({ queryKey: ['category', id] });
-      toast({
-        title: 'Categoría actualizada',
-        description: 'La categoría ha sido actualizada exitosamente.',
-      });
+      toast(TOAST_MESSAGES.CATEGORY_UPDATED);
     },
     onError: (error) => {
       toast({
-        title: 'Error al actualizar categoría',
+        ...TOAST_MESSAGES.CATEGORY_ERROR_UPDATE,
         description: error.message,
         variant: 'destructive',
       });
@@ -76,14 +71,11 @@ export const useDeleteCategory = () => {
     mutationFn: categoryService.deleteCategory,
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['categories'] });
-      toast({
-        title: 'Categoría eliminada',
-        description: 'La categoría ha sido eliminada exitosamente.',
-      });
+      toast(TOAST_MESSAGES.CATEGORY_DELETED);
     },
     onError: (error) => {
       toast({
-        title: 'Error al eliminar categoría',
+        ...TOAST_MESSAGES.CATEGORY_ERROR_DELETE,
         description: error.message,
         variant: 'destructive',
       });
