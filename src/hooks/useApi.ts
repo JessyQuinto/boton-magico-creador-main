@@ -1,73 +1,23 @@
-import { useCallback } from 'react';
-import { authService } from '@/services/authService';
-import { productService } from '@/services/productService';
-import { cartService } from '@/services/cartService';
 import { categoryService } from '@/services/categoryService';
 import { orderService } from '@/services/orderService';
 import { producerService } from '@/services/producerService';
+import { productService } from '@/services/productService';
 import { wishlistService } from '@/services/wishlistService';
-import { useApiCall, useCrudApi, usePaginatedApi } from './useApiCall';
-import type { 
-  LoginRequestDto, 
-  RegisterRequestDto, 
-  ProductDto, 
-  ProductFilters,
-  CartDto,
+import type {
   CategoryDto,
-  OrderDto,
   CreateOrderRequestDto,
+  OrderDto,
   ProducerDto,
-  WishlistDto,
-  SearchParams
+  ProductDto,
+  ProductFilters,
+  SearchParams,
+  WishlistDto
 } from '@/types/api';
+import { useCallback } from 'react';
+import { useApiCall, useCrudApi, usePaginatedApi } from './useApiCall';
 
-// Auth hooks
-export function useAuth() {
-  const login = useApiCall<any>();
-  const register = useApiCall<any>();
-  const logout = useApiCall<void>();
-  const getCurrentUser = useApiCall<any>();
-  const updateProfile = useApiCall<any>();
-  const refreshToken = useApiCall<boolean>();
-
-  const handleLogin = useCallback(async (credentials: LoginRequestDto) => {
-    return login.execute(() => authService.login(credentials));
-  }, [login]);
-
-  const handleRegister = useCallback(async (userData: RegisterRequestDto) => {
-    return register.execute(() => authService.register(userData));
-  }, [register]);
-
-  const handleLogout = useCallback(async () => {
-    return logout.execute(() => authService.logout());
-  }, [logout]);
-
-  const handleGetCurrentUser = useCallback(async () => {
-    return getCurrentUser.execute(() => authService.getCurrentUser());
-  }, [getCurrentUser]);
-
-  const handleUpdateProfile = useCallback(async (userData: any) => {
-    return updateProfile.execute(() => authService.updateProfile(userData));
-  }, [updateProfile]);
-
-  const handleRefreshToken = useCallback(async () => {
-    return refreshToken.execute(() => authService.refreshToken());
-  }, [refreshToken]);
-
-  const isAuthenticated = useCallback(() => {
-    return authService.isAuthenticated();
-  }, []);
-
-  return {
-    login: { ...login, execute: handleLogin },
-    register: { ...register, execute: handleRegister },
-    logout: { ...logout, execute: handleLogout },
-    getCurrentUser: { ...getCurrentUser, execute: handleGetCurrentUser },
-    updateProfile: { ...updateProfile, execute: handleUpdateProfile },
-    refreshToken: { ...refreshToken, execute: handleRefreshToken },
-    isAuthenticated
-  };
-}
+// NOTE: Auth functionality moved to hooks/api/useAuth.ts
+// Use import { useAuth } from '@/hooks/api/useAuth' instead
 
 // Product hooks
 export function useProducts() {
@@ -137,61 +87,16 @@ export function useProducts() {
   };
 }
 
-// Cart hooks
-export function useCart() {
-  const cart = useApiCall<CartDto>();
-  const addToCart = useApiCall<CartDto>();
-  const updateItem = useApiCall<CartDto>();
-  const removeItem = useApiCall<CartDto>();
-  const clearCart = useApiCall<void>();
-  const syncCart = useApiCall<CartDto>();
-
-  const fetchCart = useCallback(async () => {
-    return cart.execute(() => cartService.getCart());
-  }, [cart]);
-
-  const addToCartCall = useCallback(async (productId: number, quantity = 1) => {
-    return addToCart.execute(() => cartService.addToCart(productId, quantity));
-  }, [addToCart]);
-
-  const updateCartItem = useCallback(async (productId: number, quantity: number) => {
-    return updateItem.execute(() => cartService.updateCartItem(productId, quantity));
-  }, [updateItem]);
-
-  const removeFromCart = useCallback(async (productId: number) => {
-    return removeItem.execute(() => cartService.removeFromCart(productId));
-  }, [removeItem]);
-
-  const clearCartCall = useCallback(async () => {
-    return clearCart.execute(() => cartService.clearCart());
-  }, [clearCart]);
-
-  const syncCartCall = useCallback(async (items: any[]) => {
-    return syncCart.execute(() => cartService.syncCart(items));
-  }, [syncCart]);
-
-  return {
-    cart,
-    addToCart,
-    updateItem,
-    removeItem,
-    clearCart,
-    syncCart,
-    fetchCart,
-    addToCartCall,
-    updateCartItem,
-    removeFromCart,
-    clearCartCall,
-    syncCartCall
-  };
-}
+// NOTE: Cart functionality moved to hooks/api/useCart.ts
+// Use import { useCart } from '@/hooks/api/useCart' for API operations
+// Use import { useCart } from '@/hooks/useCart' for local store operations
 
 // Category hooks
 export function useCategories() {
   const categories = useCrudApi<CategoryDto>();
 
   const fetchCategories = useCallback(async () => {
-    return categories.list.execute(() => categoryService.getAllCategories());
+    return categories.list.execute(() => categoryService.getCategories());
   }, [categories.list]);
 
   const fetchCategoryById = useCallback(async (id: number) => {
@@ -218,7 +123,7 @@ export function useOrders() {
   const cancelOrder = useApiCall<OrderDto>();
   const orderHistory = useApiCall<OrderDto[]>();
 
-  const fetchOrders = useCallback(async (params?: any) => {
+  const fetchOrders = useCallback(async (params?: Record<string, unknown>) => {
     return orders.execute(() => orderService.getOrders(params));
   }, [orders]);
 
@@ -234,7 +139,7 @@ export function useOrders() {
     return cancelOrder.execute(() => orderService.cancelOrder(id, reason));
   }, [cancelOrder]);
 
-  const fetchOrderHistory = useCallback(async (params?: any) => {
+  const fetchOrderHistory = useCallback(async (params?: Record<string, unknown>) => {
     return orderHistory.execute(() => orderService.getOrderHistory(params));
   }, [orderHistory]);
 

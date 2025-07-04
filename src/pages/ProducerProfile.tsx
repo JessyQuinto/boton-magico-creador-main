@@ -1,18 +1,16 @@
 
-import React from 'react';
-import { useParams, Navigate } from 'react-router-dom';
-import { MapPin, Calendar, Star, Package, ArrowLeft } from 'lucide-react';
-import { Link } from 'react-router-dom';
-import Header from '@/components/layout/Header';
+import Footer from '@/components/Footer';
+import Header from '@/components/Header';
 import Navbar from '@/components/layout/Navbar';
-import Footer from '@/components/layout/Footer';
 import ProductCard from '@/components/product/ProductCard';
 import { getProducerById, getProductsByProducer } from '@/data/mockData';
+import { ArrowLeft, Calendar, MapPin, Package, Star } from 'lucide-react';
+import { Link, Navigate, useParams } from 'react-router-dom';
 
 const ProducerProfile = () => {
   const { id } = useParams<{ id: string }>();
   const producerId = parseInt(id || '0');
-  
+
   const producer = getProducerById(producerId);
   const products = getProductsByProducer(producerId);
 

@@ -1,20 +1,8 @@
 
-import React, { useState } from 'react';
-import { Link } from 'react-router-dom';
-import { ArrowLeft, Search, Edit, Trash2, Shield, User } from 'lucide-react';
-import Header from '@/components/layout/Header';
-import Footer from '@/components/layout/Footer';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
+import Footer from '@/components/Footer';
+import Header from '@/components/Header';
 import { Badge } from '@/components/ui/badge';
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from '@/components/ui/table';
+import { Button } from '@/components/ui/button';
 import {
   Dialog,
   DialogContent,
@@ -24,6 +12,18 @@ import {
   DialogTitle,
   DialogTrigger,
 } from '@/components/ui/dialog';
+import { Input } from '@/components/ui/input';
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from '@/components/ui/table';
+import { ArrowLeft, Edit, Search, Shield, Trash2, User } from 'lucide-react';
+import { useState } from 'react';
+import { Link } from 'react-router-dom';
 
 // Mock data para las cuentas
 const mockAccounts = [
@@ -71,9 +71,9 @@ const AccountManagement = () => {
   };
 
   const handleDeactivateAccount = (id: number) => {
-    setAccounts(prev => 
-      prev.map(account => 
-        account.id === id 
+    setAccounts(prev =>
+      prev.map(account =>
+        account.id === id
           ? { ...account, status: account.status === 'active' ? 'inactive' : 'active' }
           : account
       )
@@ -87,12 +87,12 @@ const AccountManagement = () => {
   return (
     <>
       <Header />
-      
+
       <main className="min-h-screen bg-gradient-to-br from-choco-cream via-white to-choco-light dark:from-gray-900 dark:via-gray-800 dark:to-gray-900 py-12">
         <div className="container-custom max-w-6xl">
           <div className="mb-8">
-            <Link 
-              to="/" 
+            <Link
+              to="/"
               className="text-choco-brown hover:text-choco-green dark:text-gray-300 dark:hover:text-choco-gold inline-flex items-center group transition-all"
             >
               <ArrowLeft className="h-5 w-5 mr-2 transition-transform group-hover:-translate-x-1" />
@@ -169,7 +169,7 @@ const AccountManagement = () => {
                           >
                             <Edit className="h-4 w-4" />
                           </Button>
-                          
+
                           <Button
                             variant="ghost"
                             size="sm"
@@ -200,8 +200,8 @@ const AccountManagement = () => {
                                 <Button variant="outline" className="dark:border-gray-600 dark:text-gray-300">
                                   Cancelar
                                 </Button>
-                                <Button 
-                                  variant="destructive" 
+                                <Button
+                                  variant="destructive"
                                   onClick={() => handleDeleteAccount(account.id)}
                                 >
                                   Eliminar

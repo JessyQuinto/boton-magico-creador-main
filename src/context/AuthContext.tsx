@@ -1,21 +1,16 @@
-import React, { createContext, useContext, useEffect } from 'react';
 import { useToast } from '@/hooks/use-toast';
+import { authService } from '@/services/authService';
+import type { DotNetUserDto, LoginRequestDto, RegisterRequestDto } from '@/types/api';
+import { TokenManager } from '@/utils/tokenManager';
 import {
-  QueryClient,
-  QueryClientProvider,
-  useQuery,
   useMutation,
+  useQuery,
   useQueryClient,
 } from '@tanstack/react-query';
-import { authService } from '@/services/authService';
-import { TokenManager } from '@/utils/tokenManager';
-import type { DotNetUserDto, LoginRequestDto, RegisterRequestDto } from '@/types/api';
+import React, { createContext, useContext, useEffect } from 'react';
 
 const AUTH_STORAGE_KEY = 'campo-artesano-auth-user';
 const USER_QUERY_KEY = ['auth', 'user'];
-
-// Initialize QueryClient
-const queryClient = new QueryClient();
 
 // Save user data to storage
 const saveUserToStorage = (user: DotNetUserDto | null) => {
@@ -175,11 +170,11 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       return false;
     }
   };
-  
+
   const updateUser = async (userData: Partial<DotNetUserDto>): Promise<void> => {
     if (!isAuthenticated) {
-        toast({ title: "Error", description: "Debes iniciar sesión para actualizar tu perfil.", variant: "destructive"});
-        return;
+      toast({ title: "Error", description: "Debes iniciar sesión para actualizar tu perfil.", variant: "destructive" });
+      return;
     }
     await updateUserMutation.mutateAsync(userData);
   };
@@ -239,23 +234,3 @@ export const useAuth = () => {
 //
 // ReactDOM.createRoot(document.getElementById('root')!).render(
 //   <React.StrictMode>
-//     <QueryClientProvider client={queryClient}>
-//       <AuthProvider>
-//         <App />
-//       </AuthProvider>
-//     </QueryClientProvider>
-//   </React.StrictMode>,
-// )
-//
-// This AuthProvider component itself does not need to be wrapped by QueryClientProvider
-// if it's intended to be used as shown above. The useQueryClient hook will then
-// correctly pick up the client provided at a higher level in the component tree.
-// The local 'queryClient' instance at the top of this file is okay for standalone testing or if this
-// provider were the top-level provider itself, but best practice is to have one QueryClientProvider at the root.
-
-// To use this AuthProvider with its own QueryClient (e.g. for isolated module testing or if it's the app root):
-export const AuthProviderWithClient: React.FC<{ children: React.ReactNode }> = ({ children }) => (
-  <QueryClientProvider client={queryClient}>
-    <AuthProvider>{children}</AuthProvider>
-  </QueryClientProvider>
-);

@@ -1,24 +1,25 @@
-import { useState, useEffect } from "react";
-import { Link } from "react-router-dom";
-import { Trash2, Plus, Minus, ShoppingBag, ArrowLeft, User, UserPlus } from "lucide-react";
-import Header from "@/components/Header";
 import Footer from "@/components/Footer";
+import Header from "@/components/Header";
 import LoadingSpinner from "@/components/LoadingSpinner";
+import { Breadcrumb, BreadcrumbItem, BreadcrumbLink, BreadcrumbList, BreadcrumbPage, BreadcrumbSeparator } from "@/components/ui/breadcrumb";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
-import { Breadcrumb, BreadcrumbItem, BreadcrumbLink, BreadcrumbList, BreadcrumbPage, BreadcrumbSeparator } from "@/components/ui/breadcrumb";
-import { useCart, useAuth } from "@/hooks/useApi";
+import { useCart } from "@/hooks/useCart";
 import { useNotifications } from "@/hooks/useNotifications";
+import { useAuth } from "@/store/useStore";
+import { ArrowLeft, Minus, Plus, ShoppingBag, Trash2, User, UserPlus } from "lucide-react";
+import { useEffect, useState } from "react";
+import { Link } from "react-router-dom";
 
 const Cart = () => {
-  const { 
+  const {
     cart,
     fetchCart,
     updateCartItem,
     removeFromCart,
     clearCartCall
   } = useCart();
-  
+
   const { isAuthenticated } = useAuth();
   const { showSuccess, showError } = useNotifications();
   const [acceptTerms, setAcceptTerms] = useState(false);
@@ -71,7 +72,7 @@ const Cart = () => {
       showError("Debes aceptar los términos y condiciones");
       return;
     }
-    
+
     setIsLoading(true);
     setTimeout(() => {
       setIsLoading(false);
@@ -93,7 +94,7 @@ const Cart = () => {
   return (
     <div className="min-h-screen bg-background">
       <Header />
-      
+
       <main className="container mx-auto px-4 py-4 sm:py-8">
         <Breadcrumb className="mb-4 sm:mb-8">
           <BreadcrumbList>
@@ -145,7 +146,7 @@ const Cart = () => {
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 sm:gap-8">
             {/* Cart Items */}
             <div className="lg:col-span-2 space-y-4 sm:space-y-6">
-              
+
               <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between mb-4 space-y-2 sm:space-y-0">
                 <h2 className="text-lg sm:text-xl font-semibold text-primary">
                   Productos ({cartCount} {cartCount === 1 ? 'artículo' : 'artículos'})
@@ -228,7 +229,7 @@ const Cart = () => {
               <h2 className="text-xl sm:text-2xl font-bold text-primary mb-4 sm:mb-6">
                 Resumen del Pedido
               </h2>
-              
+
               <div className="space-y-3 sm:space-y-4 mb-4 sm:mb-6">
                 <div className="flex justify-between text-sm sm:text-base">
                   <span className="text-secondary">Subtotal:</span>
@@ -303,7 +304,7 @@ const Cart = () => {
                         <span>Checkout como Invitado</span>
                       )}
                     </Button>
-                    
+
                     <Button
                       variant="outline"
                       onClick={handleCheckout}

@@ -1,14 +1,13 @@
 
-import React, { useState } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
-import { Eye, EyeOff } from 'lucide-react';
-import { useAuth } from '@/hooks/useApi';
-import { useForm } from 'react-hook-form';
+import { useAuth } from '@/hooks/api/useAuth';
 import { zodResolver } from '@hookform/resolvers/zod';
+import { Eye, EyeOff } from 'lucide-react';
+import React, { useState } from 'react';
+import { useForm } from 'react-hook-form';
+import { Link, useNavigate } from 'react-router-dom';
 import * as z from 'zod';
 
 import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
 import {
   Form,
   FormControl,
@@ -17,6 +16,7 @@ import {
   FormLabel,
   FormMessage,
 } from '@/components/ui/form';
+import { Input } from '@/components/ui/input';
 import { useToast } from '@/hooks/use-toast';
 
 // Zod schema for validation
@@ -48,7 +48,7 @@ const LoginForm: React.FC = () => {
         email: data.email,
         password: data.password,
       });
-      
+
       if (result) {
         toast({
           title: "¡Bienvenido!",
@@ -64,9 +64,9 @@ const LoginForm: React.FC = () => {
         description: login.error || "Credenciales incorrectas. Por favor, inténtalo de nuevo.",
         variant: "destructive",
       });
-      form.setError("root.serverError", { 
+      form.setError("root.serverError", {
         type: "manual",
-        message: login.error || "Error durante el inicio de sesión." 
+        message: login.error || "Error durante el inicio de sesión."
       });
     }
   };
@@ -77,7 +77,7 @@ const LoginForm: React.FC = () => {
         <h2 className="text-3xl font-bold text-tesoros-brown dark:text-white mb-2">Iniciar Sesión</h2>
         <p className="text-tesoros-brown/70 dark:text-gray-300">¡Bienvenido de nuevo!</p>
       </div>
-      
+
       <Form {...form}>
         <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
           <FormField
@@ -100,7 +100,7 @@ const LoginForm: React.FC = () => {
               </FormItem>
             )}
           />
-          
+
           <FormField
             control={form.control}
             name="password"
@@ -141,7 +141,7 @@ const LoginForm: React.FC = () => {
               </FormItem>
             )}
           />
-          
+
           {form.formState.errors.root?.serverError && (
             <div className="text-sm font-medium text-destructive">
               {form.formState.errors.root.serverError.message}
@@ -157,7 +157,7 @@ const LoginForm: React.FC = () => {
           </Button>
         </form>
       </Form>
-      
+
       <div className="mt-8 text-center">
         <p className="text-tesoros-brown/70 dark:text-gray-300">
           ¿No tienes una cuenta?{' '}

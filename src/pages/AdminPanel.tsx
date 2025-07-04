@@ -1,21 +1,19 @@
 
-import React, { useState } from 'react';
-import { 
-  Users, 
-  ShoppingCart, 
-  Package, 
-  DollarSign, 
-  Plus, 
-  Edit, 
-  Trash2,
-  BarChart3
-} from 'lucide-react';
-import Header from '@/components/layout/Header';
-import Navbar from '@/components/layout/Navbar';
-import Footer from '@/components/layout/Footer';
+import Footer from '@/components/Footer';
+import Header from '@/components/Header';
 import Container from '@/components/layout/Container';
+import Navbar from '@/components/layout/Navbar';
 import { useStore } from '@/store/useStore';
 import { Product } from '@/types';
+import {
+  BarChart3,
+  DollarSign,
+  Package,
+  Plus,
+  ShoppingCart,
+  Users
+} from 'lucide-react';
+import React, { useState } from 'react';
 
 const AdminPanel: React.FC = () => {
   const { auth } = useStore();
@@ -62,7 +60,7 @@ const AdminPanel: React.FC = () => {
     <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
       <Header />
       <Navbar />
-      
+
       <Container className="py-8">
         <div className="mb-8">
           <h1 className="text-3xl font-bold text-gray-900 dark:text-white mb-2">
@@ -81,11 +79,10 @@ const AdminPanel: React.FC = () => {
                 <button
                   key={tab.id}
                   onClick={() => setActiveTab(tab.id)}
-                  className={`py-2 px-1 border-b-2 font-medium text-sm flex items-center space-x-2 ${
-                    activeTab === tab.id
+                  className={`py-2 px-1 border-b-2 font-medium text-sm flex items-center space-x-2 ${activeTab === tab.id
                       ? 'border-[#0cf2a5] text-[#0cf2a5]'
                       : 'border-transparent text-gray-500 hover:text-gray-700 dark:hover:text-gray-300'
-                  }`}
+                    }`}
                 >
                   <tab.icon className="w-4 h-4" />
                   <span>{tab.name}</span>

@@ -1,22 +1,23 @@
-import { useState, useMemo, useEffect } from "react";
-import { useParams } from "react-router-dom";
-import Header from "@/components/Header";
 import Footer from "@/components/Footer";
+import Header from "@/components/Header";
+import LoadingSpinner from "@/components/LoadingSpinner";
 import ProductReviews from "@/components/ProductReviews";
-import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Breadcrumb, BreadcrumbItem, BreadcrumbLink, BreadcrumbList, BreadcrumbPage, BreadcrumbSeparator } from "@/components/ui/breadcrumb";
-import { Heart, ShoppingCart, Star, Truck, Shield, RotateCcw, Book } from "lucide-react";
-import { useProducts, useCart, useWishlist } from "@/hooks/useApi";
+import { Button } from "@/components/ui/button";
+import { useProducts, useWishlist } from "@/hooks/useApi";
+import { useCart } from "@/hooks/useCart";
 import { useNotifications } from "@/hooks/useNotifications";
-import LoadingSpinner from "@/components/LoadingSpinner";
+import { Heart, RotateCcw, Shield, ShoppingCart, Star, Truck } from "lucide-react";
+import { useEffect, useMemo, useState } from "react";
+import { useParams } from "react-router-dom";
 
 const ProductDetail = () => {
   const { slug } = useParams<{ slug: string }>();
   const [selectedImage, setSelectedImage] = useState(0);
   const [quantity, setQuantity] = useState(1);
 
-  const { 
+  const {
     singleProduct,
     fetchProductBySlug
   } = useProducts();
@@ -47,19 +48,19 @@ const ProductDetail = () => {
   const isLoading = singleProduct.loading;
   const error = singleProduct.error;
 
-  const inWishlist = useMemo(() => 
-    product ? wishlist.data?.products?.some(item => item.id === product.id) : false, 
+  const inWishlist = useMemo(() =>
+    product ? wishlist.data?.products?.some(item => item.id === product.id) : false,
     [product, wishlist.data]
   );
 
   // Optimized image array with fallback
-  const images = useMemo(() => 
-    product?.images || [product?.image || ''].filter(Boolean), 
+  const images = useMemo(() =>
+    product?.images || [product?.image || ''].filter(Boolean),
     [product]
   );
   const handleAddToCart = async () => {
     if (!product) return;
-    
+
     try {
       await addToCartCall(product.id, quantity);
       showSuccess(`¡${product.name} añadido al carrito!`);
@@ -70,7 +71,7 @@ const ProductDetail = () => {
 
   const handleWishlistToggle = async () => {
     if (!product) return;
-    
+
     try {
       if (inWishlist) {
         await removeFromWishlistCall(product.id);
@@ -118,7 +119,7 @@ const ProductDetail = () => {
   return (
     <div className="min-h-screen bg-background">
       <Header />
-      
+
       <main className="container mx-auto px-4 py-8">
         <Breadcrumb className="mb-8">
           <BreadcrumbList>
@@ -152,9 +153,8 @@ const ProductDetail = () => {
                   <button
                     key={index}
                     onClick={() => setSelectedImage(index)}
-                    className={`aspect-square rounded-lg overflow-hidden border-2 transition-colors ${
-                      selectedImage === index ? 'border-primary-action' : 'border-transparent'
-                    }`}
+                    className={`aspect-square rounded-lg overflow-hidden border-2 transition-colors ${selectedImage === index ? 'border-primary-action' : 'border-transparent'
+                      }`}
                   >
                     <img
                       src={image}
@@ -175,11 +175,10 @@ const ProductDetail = () => {
                   {[...Array(5)].map((_, i) => (
                     <Star
                       key={i}
-                      className={`h-4 w-4 ${
-                        i < Math.floor(product.rating || 0) 
-                          ? 'fill-yellow-400 text-yellow-400' 
+                      className={`h-4 w-4 ${i < Math.floor(product.rating || 0)
+                          ? 'fill-yellow-400 text-yellow-400'
                           : 'text-gray-300'
-                      }`}
+                        }`}
                     />
                   ))}
                 </div>
@@ -282,11 +281,10 @@ const ProductDetail = () => {
                   onClick={handleWishlistToggle}
                   variant="outline"
                   size="lg"
-                  className={`border-primary-action ${
-                    inWishlist 
-                      ? 'bg-primary-action text-white' 
+                  className={`border-primary-action ${inWishlist
+                      ? 'bg-primary-action text-white'
                       : 'text-primary-action hover:bg-primary-action hover:text-white'
-                  } border-2 shadow-sm hover:shadow-md transition-all`}
+                    } border-2 shadow-sm hover:shadow-md transition-all`}
                 >
                   <Heart className={`h-5 w-5 ${inWishlist ? 'fill-current' : ''}`} />
                 </Button>
